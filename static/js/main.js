@@ -89,29 +89,38 @@ function getSelectedCriteriaLimits() {
 $(document).ready(function () {
 
     $("#submit-btn").click(function () {
-        numExperts = parseInt($("#experts-input").val());
-        if (numExperts > 0 && numExperts <= 50) {
+        if (numExperts !== parseInt($("#experts-input").val())) {
+            numExperts = parseInt($("#experts-input").val());
+            if (numExperts > 0 && numExperts <= 50) {
+                $("#main-modal").hide();
+                $("#experts-modal").show();
+
+
+                let expertFields = "";
+                for (let i = 1; i <= numExperts; i++) {
+                    expertFields += `<div class="expert-block" id="expert-block-${i}"><span class="bold-text">Эксперт ${i}:</span><br>`;
+                    expertFields += `<div class="row_experts"><label for="expert-${i}-name" style="padding-top: 6px">Имя:</label> <input type="text" id="expert-${i}-name" name="expert-${i}-name" placeholder="Text" required></div>`;
+                    expertFields += `<div class="row_experts"><label for="expert-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="expert-${i}-id" name="expert-${i}-id" placeholder="Text" required></div>`;
+                    expertFields += `<div class="row_experts"><label for="expert-${i}-competence" style="padding-top: 6px">Компетенция:</label> <input type="text" id="expert-${i}-competence" name="expert-${i}-competence" placeholder="Text" required><br></div></div>`;
+                }
+                $("#experts-fields").html(expertFields);
+
+            } else {
+                console.log("Нужно ввести число от 1 до 50!")
+            }
+        } else {
             $("#main-modal").hide();
             $("#experts-modal").show();
-
-
-            let expertFields = "";
-            for (let i = 1; i <= numExperts; i++) {
-                expertFields += `<div class="expert-block" id="expert-block-${i}"><span class="bold-text">Эксперт ${i}:</span><br>`;
-                expertFields += `<div class="row_experts"><label for="expert-${i}-name" style="padding-top: 6px">Имя:</label> <input type="text" id="expert-${i}-name" name="expert-${i}-name" placeholder="Text" required></div>`;
-                expertFields += `<div class="row_experts"><label for="expert-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="expert-${i}-id" name="expert-${i}-id" placeholder="Text" required></div>`;
-                expertFields += `<div class="row_experts"><label for="expert-${i}-competence" style="padding-top: 6px">Компетенция:</label> <input type="text" id="expert-${i}-competence" name="expert-${i}-competence" placeholder="Text" required><br></div></div>`;
-            }
-            $("#experts-fields").html(expertFields);
-
-        } else {
-            console.log("Нужно ввести число от 1 до 50!")
         }
     });
 })
 
 $("#back-btn-to_number-of-experts").click(function () {
     $("#experts-modal").hide();
+    /*
+    let block = document.querySelector("#experts");
+    block.innerHTML = "";
+     */
     $("#main-modal").show();
 });
 
@@ -148,6 +157,21 @@ $("#submit-btn-to-number-of-criteria").click(function () {
         }
     }
     if (allFilled && goodId) {
+        let infoAboutExperts = ""
+        infoAboutExperts += '<h2>Эксперты</h2>'
+        for (let i = 1; i < numExperts; i++) {
+            let id = document.getElementById(`expert-${i}-id`).value;
+            let name = document.getElementById(`expert-${i}-name`).value;
+            let comp = document.getElementById(`expert-${i}-competence`).value;
+            infoAboutExperts += `<div style="margin-bottom: 5px"><span class="bold-text">Эксперт ${i}: ID: ${id}; имя: ${name}; компетенция: ${comp}</span></div>`;
+        }
+        let id = document.getElementById(`expert-${numExperts}-id`).value;
+        let name = document.getElementById(`expert-${numExperts}-name`).value;
+        let comp = document.getElementById(`expert-${numExperts}-competence`).value;
+        infoAboutExperts += `<div><span class="bold-text">Эксперт ${numExperts}: ID: ${id}; имя: ${name}; компетенция: ${comp}</span></div>`;
+        $("#experts").html(infoAboutExperts).show();
+
+        $("#meaningful-fields").show();
         $("#experts-modal").hide();
         $("#warningExperts").hide();
         $("#number-of-criteria-modal").show();
@@ -180,17 +204,22 @@ $("#back-btn-to-fields-of-experts").click(function () {
     Заполнение альтернатив
  */
 $("#submit-btn-to-alternatives").click(function () {
-    numAlternative = parseInt($("#alternatives-input").val());
-    if (numAlternative > 0 && numAlternative < 20) {
+    if (numAlternative !== parseInt($("#alternatives-input").val())) {
+        numAlternative = parseInt($("#alternatives-input").val());
+        if (numAlternative > 0 && numAlternative < 20) {
+            $("#number-alternatives-modal").hide();
+            $("#alternatives-modal").show();
+            let alternativeFields = ""
+            for (let i = 1; i <= numAlternative; i++) {
+                alternativeFields += `<div class="alternative-block" id="alternative-block-${i}"><span class="bold-text" style="padding-bottom: 5px">Альтернатива ${i}:</span>`;
+                alternativeFields += `<div class="row_alternatives"><label for="alternative-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="alternative-${i}-id" name="alternative-${i}-id" required></div>`;
+                alternativeFields += `<div class="row_alternatives"><label for="alternative-${i}-name" style="padding-top: 6px">Название:</label> <input type="text" id="alternative-${i}-name" name="alternative-${i}-name" required><br></div></div>`;
+            }
+            $("#alternatives-fields").html(alternativeFields)
+        }
+    } else {
         $("#number-alternatives-modal").hide();
         $("#alternatives-modal").show();
-        let alternativeFields = ""
-        for (let i = 1; i <= numAlternative; i++) {
-            alternativeFields += `<div class="alternative-block" id="alternative-block-${i}"><span class="bold-text" style="padding-bottom: 5px">Альтернатива ${i}:</span>`;
-            alternativeFields += `<div class="row_alternatives"><label for="alternative-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="alternative-${i}-id" name="alternative-${i}-id" required></div>`;
-            alternativeFields += `<div class="row_alternatives"><label for="alternative-${i}-name" style="padding-top: 6px">Название:</label> <input type="text" id="alternative-${i}-name" name="alternative-${i}-name" required><br></div></div>`;
-        }
-        $("#alternatives-fields").html(alternativeFields)
     }
 });
 
@@ -203,30 +232,35 @@ $("#back-btn-to_number-of-alternatives").click(function () {
 
 
 $("#submit-btn-to-criteria").click(function () {
-    numCriteria = parseInt($("#criteria-input").val());
-    if (numCriteria > 0 && numCriteria < 20) {
+    if (numAlternative !== parseInt($("#alternatives-input").val())) {
+        numCriteria = parseInt($("#criteria-input").val());
+        if (numCriteria > 0 && numCriteria < 20) {
+            $("#number-of-criteria-modal").hide();
+            $("#criteria-modal").show();
+            loadQuantitativeScales().then(() => {
+                let criteriaFields = "";
+                for (let i = 1; i <= numCriteria; i++) {
+                    criteriaFields += `<div class="criteria-block" id="criteria-block-${i}"><strong style="padding-bottom: 3px">Критерий ${i}:</strong>`;
+                    criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="criteria-${i}-id" name="criteria-${i}-id" required><br></div>`;
+                    criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-name" style="padding-top: 6px">Имя:</label> <input type="text" id="criteria-${i}-name" name="criteria-${i}-name" required><br></div>`;
+                    criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-qualitative" style="padding-top: 4px">Качественный критерий:</label> <select id="criteria-${i}-qualitative" name="criteria-${i}-qualitative"><option value="false">false</option><option value="true">true</option></select><br></div>`;
+                    criteriaFields += `<div class="row-criterias" id="criteria-${i}-scale" style="display: none;"><label for="criteria-${i}-scale-select" style="padding-top: 6px">Выберите шкалу:</label> <select id="criteria-${i}-scale-select" name="criteria-${i}-scale-select"></select><br></div>`;
+                    criteriaFields += `<div class="row-criterias" id="criteria-${i}-limit"><label for="criteria-${i}-limit-select" style="padding-top: 10px">Ограничение:</label> <select id="criteria-${i}-limit-select" name="criteria-${i}-limit-select">${quantitativeLimitsOptions}</select><br></div>`;
+                    criteriaFields += `</div>`;
+                }
+                $("#criteria-fields").html(criteriaFields);
+
+
+                /*
+                    Здесь еще нужен код для смены количественных критериев на качественные
+                 */
+
+
+            })
+        }
+    } else {
         $("#number-of-criteria-modal").hide();
         $("#criteria-modal").show();
-        loadQuantitativeScales().then(() => {
-            let criteriaFields = "";
-            for (let i = 1; i <= numCriteria; i++) {
-                criteriaFields += `<div class="criteria-block" id="criteria-block-${i}"><strong style="padding-bottom: 3px">Критерий ${i}:</strong>`;
-                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="criteria-${i}-id" name="criteria-${i}-id" required><br></div>`;
-                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-name" style="padding-top: 6px">Имя:</label> <input type="text" id="criteria-${i}-name" name="criteria-${i}-name" required><br></div>`;
-                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-qualitative" style="padding-top: 6px">Качественный критерий:</label> <select id="criteria-${i}-qualitative" name="criteria-${i}-qualitative"><option value="false">false</option><option value="true">true</option></select><br></div>`;
-                criteriaFields += `<div class="row-criterias" id="criteria-${i}-scale" style="display: none;"><label for="criteria-${i}-scale-select" style="padding-top: 6px">Выберите шкалу:</label> <select id="criteria-${i}-scale-select" name="criteria-${i}-scale-select"></select><br></div>`;
-                criteriaFields += `<div class="row-criterias" id="criteria-${i}-limit"><label for="criteria-${i}-limit-select">Ограничение:</label> <select id="criteria-${i}-limit-select" name="criteria-${i}-limit-select">${quantitativeLimitsOptions}</select><br></div>`;
-                criteriaFields += `</div>`;
-            }
-            $("#criteria-fields").html(criteriaFields);
-
-
-            /*
-                Здесь еще нужен код для смены количественных критериев на качественные
-             */
-
-
-        })
     }
 })
 
@@ -259,7 +293,21 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
             $(`#criteria-${i}-id`).css("border", "");
             $(`#criteria-${i}-name`).css("border", "");
         }
-        $("#warningCriteria").hide()
+        let infoAboutCriteria = "";
+        infoAboutCriteria += '<h2>Критерии</h2>';
+        for (let i = 1; i < numCriteria; i++) {
+            let id = document.getElementById(`criteria-${i}-id`).value;
+            let name = document.getElementById(`criteria-${i}-name`).value;
+            /*
+            Здесь еще обработка шкал для каждого критерия
+             */
+            infoAboutCriteria += `<div style="margin-bottom: 5px"><span class="bold-text">Критерий ${i}: ID: ${id}; имя: ${name}</span></div>`;
+        }
+        let id = document.getElementById(`criteria-${numCriteria}-id`).value;
+        let name = document.getElementById(`criteria-${numCriteria}-name`).value;
+        infoAboutCriteria += `<div><span class="bold-text">Критерий ${numCriteria}: ID: ${id}; имя: ${name}</span></div>`;
+        $("#criteria").html(infoAboutCriteria).show();
+        $("#warningCriteria").hide();
         $("#number-alternatives-modal").show();
     } else {
         if (!goodId && !allFilled) {
@@ -277,15 +325,75 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
 
 $("#back-btn-to-number-of-criteria").click(function () {
     $("#criteria-modal").hide();
+    /*
     let blocks = document.querySelectorAll(".criteria-block")
     blocks.forEach(block => block.remove())
+    let block = document.querySelector("#criteria");
+    block.innerHTML = "";
+     */
     $("#number-of-criteria-modal").show();
 })
 
 $("#submit-btn-to-evaluate").click(function () {
-    /*
-        Код для оценки экспертов каждой альтернативы
-    */
+    let allFilled = true
+    for (let i = 1; i <= numAlternative; i++) {
+        if ($(`#alternative-${i}-id`).val() === "") {
+            $(`#alternative-${i}-id`).css("border", "2px solid red");
+            allFilled = false
+        }
+        if ($(`#alternative-${i}-name`).val() === "") {
+            $(`#alternative-${i}-name`).css("border", "2px solid red");
+            allFilled = false
+        }
+    }
+    let goodId = true;
+    for (let i = 1; i < numAlternative; i++) {
+        for (let j = i + 1; j <= numAlternative; j++) {
+            if ($(`#alternative-${i}-id`).val() === $(`#alternative-${j}-id`).val()) {
+                $(`#alternative-${i}-id`).css("border", "2px solid red");
+                $(`#alternative-${j}-id`).css("border", "2px solid red");
+                goodId = false;
+            }
+        }
+    }
+
+    if (allFilled && goodId) {
+        for (let i = 1; i <= numAlternative; i++) {
+            $(`#alternative-${i}-id`).css("border", "");
+            $(`#alternative-${i}-name`).css("border", "");
+        }
+        let infoAboutAlternative = "";
+        infoAboutAlternative += '<h2>Альтернативы</h2>';
+        for (let i = 1; i < numAlternative; i++) {
+            let id = document.getElementById(`alternative-${i}-id`).value;
+            let name = document.getElementById(`alternative-${i}-name`).value;
+            /*
+            Здесь еще обработка шкал для каждого критерия
+             */
+            infoAboutAlternative += `<div style="margin-bottom: 5px"><span class="bold-text">Альтернатива ${i}: ID: ${id}; имя: ${name}</span></div>`;
+        }
+        let id = document.getElementById(`alternative-${numAlternative}-id`).value;
+        let name = document.getElementById(`alternative-${numAlternative}-name`).value;
+        infoAboutAlternative += `<div"><span class="bold-text">Альтернатива ${numAlternative}: ID: ${id}; имя: ${name}</span></div>`;
+        $("#alternatives").html(infoAboutAlternative).show();
+        /*
+        Удаление текущего блока
+        Появление следующего блока
+         */
+        /*
+            Код для оценки экспертов каждой альтернативы
+        */
+    } else {
+        if (!goodId && !allFilled) {
+            document.getElementById("Alternative-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)"
+        } else if (!goodId) {
+            document.getElementById("Alternative-warning-text").textContent = "Id критериев совпадают"
+        } else {
+            document.getElementById("Alternative-warning-text").textContent = "Не все поля заполнены"
+        }
+
+        $("#warningCriteria").show()
+    }
 })
 
 
