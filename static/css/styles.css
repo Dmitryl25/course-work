@@ -2,16 +2,21 @@ body {
   font-family: Arial, sans-serif;
   text-align: center;
 }
-div.modal {
-  padding-left: 20px;
-  padding-top: 1px;
-  overflow: auto;
-  max-height: 100vh;
-}
 
 .window {
   box-shadow: 0 0 10px #000;
-  border-radius: 8px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  padding: 15px 30px;
+  background: #fff;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+#meaningful-modal {
+  box-shadow: 0 0 10px #000;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
   padding: 15px 30px;
   background: #fff;
   box-sizing: border-box;
@@ -40,7 +45,7 @@ select {
 
 #container {
   display: flex;
-  width: 99.6vw;
+  width: 99.5vw;
 }
 #meaningful-modal {
   flex-grow: 1;
@@ -52,6 +57,8 @@ select {
 }
 #main-modal, #experts-modal, #number-alternatives-modal, #alternatives-modal, #criteria-modal, #number-of-criteria-modal {
   width: 99%;
+  overflow-y: auto;
+  max-height: 95.5vh;
 }
 .blue-btn {
   appearance: none;
@@ -72,6 +79,28 @@ select {
   outline: none;
   box-shadow: 0 0 0 4px #cbd6ee;
 }
+
+.blue-btn {
+  appearance: none;
+  border: 0;
+  border-radius: 5px;
+  background: #4676D7;
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.blue-btn:hover {
+  background: #1d49aa;
+}
+.blue-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px #cbd6ee;
+}
+
+
 
 .expert-block {
   margin: 0 auto;
@@ -162,3 +191,24 @@ select {
 #criteria {
   margin-bottom: 8px;
 }
+
+.blue-btn-again {
+  appearance: none;
+  border: 0;
+  border-radius: 5px;
+  background: #4676D7;
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.blue-btn-again:hover {
+  background: #1d49aa;
+}
+.blue-btn-again:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px #cbd6ee;
+}
+
