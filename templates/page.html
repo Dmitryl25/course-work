@@ -17,23 +17,35 @@
 
 <!-- окно экспертов -->
   <div id="experts-modal" class="window" style="display: none;">
-  <h2>Заполните экспертов</h2>
-  <div id="experts-fields"></div>
-  <div id="warningExperts" style="padding-left: 120px; display: none">
+    <h2>Заполните экспертов</h2>
+    <div id="experts-fields"></div>
+    <div id="warningExperts" style="padding-left: 120px; display: none">
       <p id="Experts-warning-text" style="color: red">Заполнены не все поля</p>
-  </div>
-    <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
-      <button id="back-btn-to_number-of-experts" class="blue-btn">Назад</button>
-      <button id="submit-btn-to-number-of-criteria" class="blue-btn">Отправить</button>
+    </div>
+    <div style="display: flex">
+       <div style="padding-top: 30px">
+           <button class="blue-btn-again" style="width: 141px">Начать заново</button>
+       </div>
+          <div style="width: 45%"></div>
+        <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
+            <button id="back-btn-to_number-of-experts" class="blue-btn">Назад</button>
+            <button id="submit-btn-to-number-of-criteria" class="blue-btn">Отправить</button>
+        </div>
     </div>
   </div>
 <!-- окно выбора числа критериев -->
   <div id="number-of-criteria-modal" class="window" style="display: none;">
     <label for="criteria-input" style="font-size: 20px; padding-right: 5px">Введите количество критериев:</label>
     <input type="number" id="criteria-input" style="font-size: 15px" name="criteria-input" value="1" min="1" max="20" required>
-    <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
-      <button id="back-btn-to-fields-of-experts" class="blue-btn">Назад</button>
-      <button id="submit-btn-to-criteria" class="blue-btn">Отправить</button>
+    <div style="display: flex">
+       <div style="padding-top: 30px">
+           <button class="blue-btn-again" style="width: 141px">Начать заново</button>
+       </div>
+          <div style="width: 45%"></div>
+        <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
+            <button id="back-btn-to-fields-of-experts" class="blue-btn">Назад</button>
+            <button id="submit-btn-to-criteria" class="blue-btn">Отправить</button>
+        </div>
     </div>
   </div>
 
@@ -44,10 +56,16 @@
   <div id="warningCriteria" style="padding-left: 120px; display: none">
       <p id="Criteria-warning-text" style="color: red">Заполнены не все поля</p>
   </div>
-    <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
-      <button id="back-btn-to-number-of-criteria" class="blue-btn">Назад</button>
-      <button id="submit-btn-to-number-of-alternatives" class="blue-btn">Отправить</button>
-    </div>
+   <div style="display: flex">
+       <div style="padding-top: 30px">
+           <button class="blue-btn-again" style="width: 141px">Начать заново</button>
+       </div>
+          <div style="width: 45%"></div>
+        <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
+            <button id="back-btn-to-number-of-criteria" class="blue-btn">Назад</button>
+            <button id="submit-btn-to-number-of-alternatives" class="blue-btn">Отправить</button>
+        </div>
+   </div>
 </div>
 
 <!-- окно шкал -->
@@ -61,10 +79,16 @@
 <div id="number-alternatives-modal" class="window" style="display: none;">
     <label for="alternatives-input" style="font-size: 20px; padding-right: 5px">Введите количество альтернатив:</label>
     <input type="number" id="alternatives-input" style="font-size: 15px" name="alternatives-input" value="1" min="1" max="10" required>
-    <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
-      <button id="back-btn-to-fields-of-criteria" class="blue-btn">Назад</button>
-      <button id="submit-btn-to-alternatives" class="blue-btn">Отправить</button>
-    </div>
+    <div style="display: flex">
+       <div style="padding-top: 30px">
+           <button class="blue-btn-again" style="width: 141px">Начать заново</button>
+       </div>
+          <div style="width: 45%"></div>
+        <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
+            <button id="back-btn-to-fields-of-criteria" class="blue-btn">Назад</button>
+            <button id="submit-btn-to-alternatives" class="blue-btn">Отправить</button>
+        </div>
+   </div>
 </div>
 
 <!-- окно альтернатив -->
@@ -74,13 +98,20 @@
   <div id="warningAlternative" style="padding-left: 120px; display: none">
       <p id="Alternative-warning-text" style="color: red">Заполнены не все поля</p>
   </div>
-    <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
-      <button id="back-btn-to_number-of-alternatives" class="blue-btn">Назад</button>
-      <button id="submit-btn-to-evaluate" class="blue-btn">Отправить</button>
-    </div>
+   <div style="display: flex">
+       <div style="padding-top: 30px">
+           <button class="blue-btn-again" style="width: 141px">Начать заново</button>
+       </div>
+          <div style="width: 45%"></div>
+        <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
+            <button id="back-btn-to_number-of-alternatives" class="blue-btn">Назад</button>
+            <button id="submit-btn-to-evaluate" class="blue-btn">Отправить</button>
+        </div>
+   </div>
   </div>
+
   </div>
-    <div id="meaningful-modal" class="window" style="display: block;">
+    <div id="meaningful-modal" style="display: block;">
     <h2 style="font-size: 30px">Элементы</h2>
     <div id="meaningful-fields" style="display: none">
         <div id="res"></div>
