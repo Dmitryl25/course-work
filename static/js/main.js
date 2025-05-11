@@ -81,21 +81,51 @@ function getSelectedCriteriaLimits() {
  */
 
 
+$(".blue-btn-again").click(function () {
+    let blocks = document.querySelectorAll(".criteria-block");
+    blocks.forEach(block => block.remove());
+    blocks = document.querySelectorAll(".expert-block");
+    blocks.forEach(block => block.remove());
+    blocks = document.querySelectorAll(".alternative-block-block");
+    blocks.forEach(block => block.remove());
+    blocks = document.querySelectorAll(".alternative-block-block");
+    blocks.forEach(block => block.remove());
 
+    blocks = document.querySelectorAll(".infoAboutExperts");
+    blocks.forEach(block => block.remove());
+    $("#experts").hide();
+
+    blocks = document.querySelectorAll(".infoAboutCriteria");
+    blocks.forEach(block => block.remove());
+    $("#criteria").hide();
+
+    blocks = document.querySelectorAll(".infoAboutAlternative");
+    blocks.forEach(block => block.remove());
+    $("#alternatives").hide();
+
+
+    numExperts = 0;
+    numCriteria = 0;
+    numAlternative = 0;
+    $("#main-modal").show();
+    $("#experts-modal").hide();
+    $("#number-of-criteria-modal").hide()
+    $("#alternatives-modal").hide();
+    $("#criteria-modal").hide();
+    $("#number-alternatives-modal").hide();
+})
 
 
 
 
 $(document).ready(function () {
-
+    loadQuantitativeScales();
     $("#submit-btn").click(function () {
         if (numExperts !== parseInt($("#experts-input").val())) {
             numExperts = parseInt($("#experts-input").val());
             if (numExperts > 0 && numExperts <= 50) {
                 $("#main-modal").hide();
                 $("#experts-modal").show();
-
-
                 let expertFields = "";
                 for (let i = 1; i <= numExperts; i++) {
                     expertFields += `<div class="expert-block" id="expert-block-${i}"><span class="bold-text">Эксперт ${i}:</span><br>`;
@@ -104,6 +134,7 @@ $(document).ready(function () {
                     expertFields += `<div class="row_experts"><label for="expert-${i}-competence" style="padding-top: 6px">Компетенция:</label> <input type="text" id="expert-${i}-competence" name="expert-${i}-competence" placeholder="Text" required><br></div></div>`;
                 }
                 $("#experts-fields").html(expertFields);
+
 
             } else {
                 console.log("Нужно ввести число от 1 до 50!")
@@ -158,17 +189,17 @@ $("#submit-btn-to-number-of-criteria").click(function () {
     }
     if (allFilled && goodId) {
         let infoAboutExperts = ""
-        infoAboutExperts += '<h2>Эксперты</h2>'
+        infoAboutExperts += '<div class="infoAboutExperts" style="margin-bottom: 10px"><span style="font-size: 24px">Эксперты</span></div>'
         for (let i = 1; i < numExperts; i++) {
             let id = document.getElementById(`expert-${i}-id`).value;
             let name = document.getElementById(`expert-${i}-name`).value;
             let comp = document.getElementById(`expert-${i}-competence`).value;
-            infoAboutExperts += `<div style="margin-bottom: 5px"><span class="bold-text">Эксперт ${i}: ID: ${id}; имя: ${name}; компетенция: ${comp}</span></div>`;
+            infoAboutExperts += `<div class="infoAboutExperts" style="margin-bottom: 5px"><span class="bold-text">Эксперт ${i}: ID: ${id};  Имя: ${name};  Компетенция: ${comp}</span></div>`;
         }
         let id = document.getElementById(`expert-${numExperts}-id`).value;
         let name = document.getElementById(`expert-${numExperts}-name`).value;
         let comp = document.getElementById(`expert-${numExperts}-competence`).value;
-        infoAboutExperts += `<div><span class="bold-text">Эксперт ${numExperts}: ID: ${id}; имя: ${name}; компетенция: ${comp}</span></div>`;
+        infoAboutExperts += `<div class="infoAboutExperts"><span class="bold-text">Эксперт ${numExperts}: ID: ${id};  Имя: ${name};  Компетенция: ${comp}</span></div>`;
         $("#experts").html(infoAboutExperts).show();
 
         $("#meaningful-fields").show();
@@ -237,18 +268,17 @@ $("#submit-btn-to-criteria").click(function () {
         if (numCriteria > 0 && numCriteria < 20) {
             $("#number-of-criteria-modal").hide();
             $("#criteria-modal").show();
-            loadQuantitativeScales().then(() => {
-                let criteriaFields = "";
-                for (let i = 1; i <= numCriteria; i++) {
-                    criteriaFields += `<div class="criteria-block" id="criteria-block-${i}"><strong style="padding-bottom: 3px">Критерий ${i}:</strong>`;
-                    criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="criteria-${i}-id" name="criteria-${i}-id" required><br></div>`;
-                    criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-name" style="padding-top: 6px">Имя:</label> <input type="text" id="criteria-${i}-name" name="criteria-${i}-name" required><br></div>`;
-                    criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-qualitative" style="padding-top: 4px">Качественный критерий:</label> <select id="criteria-${i}-qualitative" name="criteria-${i}-qualitative"><option value="false">false</option><option value="true">true</option></select><br></div>`;
-                    criteriaFields += `<div class="row-criterias" id="criteria-${i}-scale" style="display: none;"><label for="criteria-${i}-scale-select" style="padding-top: 6px">Выберите шкалу:</label> <select id="criteria-${i}-scale-select" name="criteria-${i}-scale-select"></select><br></div>`;
-                    criteriaFields += `<div class="row-criterias" id="criteria-${i}-limit"><label for="criteria-${i}-limit-select" style="padding-top: 10px">Ограничение:</label> <select id="criteria-${i}-limit-select" name="criteria-${i}-limit-select">${quantitativeLimitsOptions}</select><br></div>`;
-                    criteriaFields += `</div>`;
-                }
-                $("#criteria-fields").html(criteriaFields);
+            let criteriaFields = "";
+            for (let i = 1; i <= numCriteria; i++) {
+                criteriaFields += `<div class="criteria-block" id="criteria-block-${i}"><strong style="padding-bottom: 3px">Критерий ${i}:</strong>`;
+                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="criteria-${i}-id" name="criteria-${i}-id" required><br></div>`;
+                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-name" style="padding-top: 6px">Имя:</label> <input type="text" id="criteria-${i}-name" name="criteria-${i}-name" required><br></div>`;
+                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-qualitative" style="padding-top: 4px">Качественный критерий:</label> <select id="criteria-${i}-qualitative" name="criteria-${i}-qualitative"><option value="false">false</option><option value="true">true</option></select><br></div>`;
+                criteriaFields += `<div class="row-criterias" id="criteria-${i}-scale" style="display: none;"><label for="criteria-${i}-scale-select" style="padding-top: 6px">Выберите шкалу:</label> <select id="criteria-${i}-scale-select" name="criteria-${i}-scale-select"></select><br></div>`;
+                criteriaFields += `<div class="row-criterias" id="criteria-${i}-limit"><label for="criteria-${i}-limit-select" style="padding-top: 10px">Ограничение:</label> <select id="criteria-${i}-limit-select" name="criteria-${i}-limit-select">${quantitativeLimitsOptions}</select><br></div>`;
+                criteriaFields += `</div>`;
+            }
+            $("#criteria-fields").html(criteriaFields);
 
 
                 /*
@@ -256,7 +286,7 @@ $("#submit-btn-to-criteria").click(function () {
                  */
 
 
-            })
+
         }
     } else {
         $("#number-of-criteria-modal").hide();
@@ -294,18 +324,18 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
             $(`#criteria-${i}-name`).css("border", "");
         }
         let infoAboutCriteria = "";
-        infoAboutCriteria += '<h2>Критерии</h2>';
+        infoAboutCriteria += '<div class="infoAboutCriteria" style="margin-bottom: 10px"><span style="font-size: 24px">Критерии</span></div>';
         for (let i = 1; i < numCriteria; i++) {
             let id = document.getElementById(`criteria-${i}-id`).value;
             let name = document.getElementById(`criteria-${i}-name`).value;
             /*
             Здесь еще обработка шкал для каждого критерия
              */
-            infoAboutCriteria += `<div style="margin-bottom: 5px"><span class="bold-text">Критерий ${i}: ID: ${id}; имя: ${name}</span></div>`;
+            infoAboutCriteria += `<div class="infoAboutCriteria" style="margin-bottom: 5px"><span class="bold-text">Критерий ${i}:  ID: ${id};  Имя: ${name}</span></div>`;
         }
         let id = document.getElementById(`criteria-${numCriteria}-id`).value;
         let name = document.getElementById(`criteria-${numCriteria}-name`).value;
-        infoAboutCriteria += `<div><span class="bold-text">Критерий ${numCriteria}: ID: ${id}; имя: ${name}</span></div>`;
+        infoAboutCriteria += `<div class="infoAboutCriteria"><span class="bold-text">Критерий ${numCriteria}:  ID: ${id};  Имя: ${name}</span></div>`;
         $("#criteria").html(infoAboutCriteria).show();
         $("#warningCriteria").hide();
         $("#number-alternatives-modal").show();
@@ -363,18 +393,18 @@ $("#submit-btn-to-evaluate").click(function () {
             $(`#alternative-${i}-name`).css("border", "");
         }
         let infoAboutAlternative = "";
-        infoAboutAlternative += '<h2>Альтернативы</h2>';
+        infoAboutAlternative += '<div class="infoAboutAlternative" style="margin-bottom: 10px"><span style="font-size: 24px">Альтернативы</span></div>';
         for (let i = 1; i < numAlternative; i++) {
             let id = document.getElementById(`alternative-${i}-id`).value;
             let name = document.getElementById(`alternative-${i}-name`).value;
             /*
             Здесь еще обработка шкал для каждого критерия
              */
-            infoAboutAlternative += `<div style="margin-bottom: 5px"><span class="bold-text">Альтернатива ${i}: ID: ${id}; имя: ${name}</span></div>`;
+            infoAboutAlternative += `<div class="infoAboutAlternative" style="margin-bottom: 5px"><span class="bold-text">Альтернатива ${i}:  ID: ${id};  Имя: ${name}</span></div>`;
         }
         let id = document.getElementById(`alternative-${numAlternative}-id`).value;
         let name = document.getElementById(`alternative-${numAlternative}-name`).value;
-        infoAboutAlternative += `<div"><span class="bold-text">Альтернатива ${numAlternative}: ID: ${id}; имя: ${name}</span></div>`;
+        infoAboutAlternative += `<div class="infoAboutAlternative"><span class="bold-text">Альтернатива ${numAlternative}:  ID: ${id};  Имя: ${name}</span></div>`;
         $("#alternatives").html(infoAboutAlternative).show();
         /*
         Удаление текущего блока
