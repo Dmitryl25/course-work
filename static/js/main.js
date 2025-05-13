@@ -8,6 +8,33 @@ let qualitativeScaleValues = {};
 let scalesFromOntology = {};
 let criteriaLimits = {};
 
+let limits = [];
+let data = {
+    "task_description": {
+        "abstractionLevels": [
+            {
+            "abstractionLevelID": "group1",
+            "abstractionLevelName": "Abstraction level no. 1"
+            }
+        ],
+        "abstractionLevelWeights": {
+            "group1": 1.0
+        },
+        "scales": [],
+        "criteria": {
+            "group1": []
+        },
+        "alternatives": [],
+        "expertWeightsRule": {
+            "1": 1.0
+        },
+        "expertWeights": {},
+        "experts": [],
+        "estimations": {}
+    }
+};
+
+
 /*
 Блок заимствованного кода
  */
@@ -76,6 +103,7 @@ function getSelectedCriteriaLimits() {
     });
 }
 
+
 /*
 Конец блока
  */
@@ -86,9 +114,11 @@ $(".blue-btn-again").click(function () {
     blocks.forEach(block => block.remove());
     blocks = document.querySelectorAll(".expert-block");
     blocks.forEach(block => block.remove());
-    blocks = document.querySelectorAll(".alternative-block-block");
+    blocks = document.querySelectorAll(".alternative-block");
     blocks.forEach(block => block.remove());
-    blocks = document.querySelectorAll(".alternative-block-block");
+    blocks = document.querySelectorAll(".alternative-block");
+    blocks.forEach(block => block.remove());
+    blocks = document.querySelectorAll(".evaluations-block");
     blocks.forEach(block => block.remove());
 
     blocks = document.querySelectorAll(".infoAboutExperts");
@@ -104,6 +134,7 @@ $(".blue-btn-again").click(function () {
     $("#alternatives").hide();
 
 
+
     numExperts = 0;
     numCriteria = 0;
     numAlternative = 0;
@@ -113,6 +144,7 @@ $(".blue-btn-again").click(function () {
     $("#alternatives-modal").hide();
     $("#criteria-modal").hide();
     $("#number-alternatives-modal").hide();
+    $("#evaluation-modal").hide();
 })
 
 
@@ -120,6 +152,7 @@ $(".blue-btn-again").click(function () {
 
 $(document).ready(function () {
     loadQuantitativeScales();
+    loadScalesFromOntology();
     $("#submit-btn").click(function () {
         if (numExperts !== parseInt($("#experts-input").val())) {
             numExperts = parseInt($("#experts-input").val());
@@ -263,7 +296,7 @@ $("#back-btn-to_number-of-alternatives").click(function () {
 
 
 $("#submit-btn-to-criteria").click(function () {
-    if (numAlternative !== parseInt($("#alternatives-input").val())) {
+    if (numCriteria !== parseInt($("#criteria-input").val())) {
         numCriteria = parseInt($("#criteria-input").val());
         if (numCriteria > 0 && numCriteria < 20) {
             $("#number-of-criteria-modal").hide();
@@ -274,18 +307,24 @@ $("#submit-btn-to-criteria").click(function () {
                 criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="criteria-${i}-id" name="criteria-${i}-id" required><br></div>`;
                 criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-name" style="padding-top: 6px">Имя:</label> <input type="text" id="criteria-${i}-name" name="criteria-${i}-name" required><br></div>`;
                 criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-qualitative" style="padding-top: 4px">Качественный критерий:</label> <select id="criteria-${i}-qualitative" name="criteria-${i}-qualitative"><option value="false">false</option><option value="true">true</option></select><br></div>`;
-                criteriaFields += `<div class="row-criterias" id="criteria-${i}-scale" style="display: none;"><label for="criteria-${i}-scale-select" style="padding-top: 6px">Выберите шкалу:</label> <select id="criteria-${i}-scale-select" name="criteria-${i}-scale-select"></select><br></div>`;
+                criteriaFields += `<div class="row-criterias" id="criteria-${i}-scale" style="display: none;"><label for="criteria-${i}-scale-select"">Выберите шкалу:</label> <select id="criteria-${i}-scale-select" name="criteria-${i}-scale-select"></select><br></div>`;
                 criteriaFields += `<div class="row-criterias" id="criteria-${i}-limit"><label for="criteria-${i}-limit-select" style="padding-top: 10px">Ограничение:</label> <select id="criteria-${i}-limit-select" name="criteria-${i}-limit-select">${quantitativeLimitsOptions}</select><br></div>`;
                 criteriaFields += `</div>`;
             }
             $("#criteria-fields").html(criteriaFields);
 
-
-                /*
-                    Здесь еще нужен код для смены количественных критериев на качественные
-                 */
-
-
+            for (let i = 1; i <= numCriteria; i++) {
+                $(`#criteria-${i}-qualitative`).change(function () {
+                    if ($(this).val() === "true") {
+                        $(`#criteria-${i}-scale`).show();
+                        $(`#criteria-${i}-limit`).hide();
+                        $(`#criteria-${i}-scale-select`).html(qualitativeScaleOptions);
+                    } else {
+                        $(`#criteria-${i}-scale`).hide();
+                        $(`#criteria-${i}-limit`).show();
+                    }
+                });
+            }
 
         }
     } else {
@@ -296,6 +335,7 @@ $("#submit-btn-to-criteria").click(function () {
 
 $("#submit-btn-to-number-of-alternatives").click(function () {
     let allFilled = true
+    console.log($("#criteria-1-scale").val());
     for (let i = 1; i <= numCriteria; i++) {
         if ($(`#criteria-${i}-id`).val() === "") {
             $(`#criteria-${i}-id`).css("border", "2px solid red");
@@ -328,14 +368,18 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
         for (let i = 1; i < numCriteria; i++) {
             let id = document.getElementById(`criteria-${i}-id`).value;
             let name = document.getElementById(`criteria-${i}-name`).value;
+            let isQuality = document.getElementById(`criteria-${i}-qualitative`);
+            isQuality = isQuality.options[isQuality.selectedIndex].value;
             /*
             Здесь еще обработка шкал для каждого критерия
              */
-            infoAboutCriteria += `<div class="infoAboutCriteria" style="margin-bottom: 5px"><span class="bold-text">Критерий ${i}:  ID: ${id};  Имя: ${name}</span></div>`;
+            infoAboutCriteria += `<div class="infoAboutCriteria" style="margin-bottom: 5px"><span class="bold-text">Критерий ${i}:  ID: ${id};  Имя: ${name}; Качественная шкала: ${isQuality}</span></div>`;
         }
         let id = document.getElementById(`criteria-${numCriteria}-id`).value;
         let name = document.getElementById(`criteria-${numCriteria}-name`).value;
-        infoAboutCriteria += `<div class="infoAboutCriteria"><span class="bold-text">Критерий ${numCriteria}:  ID: ${id};  Имя: ${name}</span></div>`;
+        let isQuality = document.getElementById(`criteria-${numCriteria}-qualitative`);
+            isQuality = isQuality.options[isQuality.selectedIndex].value;
+        infoAboutCriteria += `<div class="infoAboutCriteria"><span class="bold-text">Критерий ${numCriteria}:  ID: ${id};  Имя: ${name}; Качественная шкала: ${isQuality}</span></div>`;
         $("#criteria").html(infoAboutCriteria).show();
         $("#warningCriteria").hide();
         $("#number-alternatives-modal").show();
@@ -406,13 +450,55 @@ $("#submit-btn-to-evaluate").click(function () {
         let name = document.getElementById(`alternative-${numAlternative}-name`).value;
         infoAboutAlternative += `<div class="infoAboutAlternative"><span class="bold-text">Альтернатива ${numAlternative}:  ID: ${id};  Имя: ${name}</span></div>`;
         $("#alternatives").html(infoAboutAlternative).show();
+
+        $("#alternatives-modal").hide();
+
         /*
-        Удаление текущего блока
-        Появление следующего блока
-         */
-        /*
-            Код для оценки экспертов каждой альтернативы
         */
+        getSelectedCriteriaLimits().then(arr => {
+            let evaluationMatrix = "";
+            for (let i = 1; i <= numExperts; i++) {
+                evaluationMatrix += `<div class="evaluations-block" id="evaluations-of-experts-${i}" style="margin-bottom: 20px; box-sizing: border-box"><strong>Эксперт ${i}</strong>`;
+                evaluationMatrix += `<div style="display: flex; padding-bottom: 5px"><div style="min-width: 120px"></div>`;
+                for (let j = 1; j < numCriteria; j++) {
+                    evaluationMatrix += `<div style="min-width: 138px; text-align: center; margin-right: 3px"><span>Критерий ${j}</span></div>`;
+                }
+                evaluationMatrix += `<div style="min-width: 138px; text-align: center"><span>Критерий ${numCriteria}</span></div>`;
+                evaluationMatrix += `</div>`;
+                for (let j = 1; j <= numAlternative; j++) {
+                    evaluationMatrix += `<div style="display: flex; margin-bottom: 3px"><span style="min-width: 120px; padding-top: 10px">Альтернатива ${j}</span>`
+                    for (let k = 1; k <= numCriteria; k++) {
+                        let getIsQuality = document.getElementById(`criteria-${k}-qualitative`);
+                        let isQuantity = getIsQuality.options[getIsQuality.selectedIndex].value === "false";
+                        if (isQuantity) {
+                            let limit = arr[k]
+                            if (k !== numCriteria) {
+                                evaluationMatrix += `<div style="margin-right: 3px"><input type="number" value="0" id="assessment-${i}-${j + 1}-${k + 1}" name="assessment-${i}-${j + 1}-${k + 1}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                            } else {
+                                evaluationMatrix += `<div><input type="number" value="0" id="assessment-${i}-${j + 1}-${k + 1}" name="assessment-${i}-${j + 1}-${k + 1}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                            }
+                        } else {
+                            evaluationMatrix += `<div><select id="assessment-${i}-${j+1}-${k+1}" name="assessment-${i}-${j+1}-${k+1}" style="max-width: 138px">`;
+                            let selectedScale = $(`#criteria-${k}-scale-select`).val();
+                            if (selectedScale && selectedScale.startsWith('S')) {
+                                let scaleValues = qualitativeScaleValues[selectedScale];
+
+                                if (scaleValues) {
+                                    scaleValues.split(', ').forEach(value => {
+                                        evaluationMatrix += `<option value="${value.trim()}">${value.trim()}</option>`;
+                                    });
+                                }
+                            }
+                            evaluationMatrix += `</select></div>`;
+                        }
+                    }
+                    evaluationMatrix += `</div>`;
+                }
+                evaluationMatrix += `</div>`;
+            }
+            $("#evaluations-fields").html(evaluationMatrix);
+            $("#evaluation-modal").show();
+        })
     } else {
         if (!goodId && !allFilled) {
             document.getElementById("Alternative-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)"
@@ -421,10 +507,36 @@ $("#submit-btn-to-evaluate").click(function () {
         } else {
             document.getElementById("Alternative-warning-text").textContent = "Не все поля заполнены"
         }
-
         $("#warningCriteria").show()
     }
 })
+
+/*
+
+ */
+$("#back-btn-to-fields-of-alternatives").click(function () {
+    $("#evaluation-modal").hide();
+
+
+
+    $("#alternatives-modal").show();
+})
+
+$("#submit-btn-to-send").click(function () {
+    /*
+        Главный блок
+     */
+    for (let i = 1; i <= numExperts; i++) {
+
+
+        for (let j = 1; j <= numAlternative; j++) {
+            for (let k = 1; k <= numCriteria; k++) {
+
+            }
+        }
+    }
+})
+
 
 
 
