@@ -55,9 +55,10 @@ select {
 #left {
   width: 50%;
 }
-#main-modal, #experts-modal, #number-alternatives-modal, #alternatives-modal, #criteria-modal, #number-of-criteria-modal {
+#main-modal, #experts-modal, #number-alternatives-modal, #alternatives-modal, #criteria-modal, #number-of-criteria-modal, #evaluation-modal {
   width: 99%;
   overflow-y: auto;
+  overflow-x: auto;
   max-height: 95.5vh;
 }
 .blue-btn {
@@ -212,3 +213,8 @@ select {
   box-shadow: 0 0 0 4px #cbd6ee;
 }
 
+.evaluations-block input {
+  border: 1px solid #ccc;
+  font-size: 16px;
+  border-radius: 4px;
+}
