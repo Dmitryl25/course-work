@@ -10,28 +10,26 @@ let criteriaLimits = {};
 
 let limits = [];
 let data = {
-    "task_description": {
-        "abstractionLevels": [
-            {
+    "abstractionLevels": [
+        {
             "abstractionLevelID": "group1",
             "abstractionLevelName": "Abstraction level no. 1"
-            }
-        ],
-        "abstractionLevelWeights": {
-            "group1": 1.0
-        },
-        "scales": [],
-        "criteria": {
-            "group1": []
-        },
-        "alternatives": [],
-        "expertWeightsRule": {
-            "1": 1.0
-        },
-        "expertWeights": {},
-        "experts": [],
-        "estimations": {}
-    }
+        }
+    ],
+    "abstractionLevelWeights": {
+        "group1": 1.0
+    },
+    "scales": [],
+    "criteria": {
+        "group1": []
+    },
+    "alternatives": [],
+    "expertWeightsRule": {
+        "1": 1.0
+    },
+    "expertWeights": {},
+    "experts": [],
+    "estimations": {}
 };
 
 
@@ -473,12 +471,12 @@ $("#submit-btn-to-evaluate").click(function () {
                         if (isQuantity) {
                             let limit = arr[k]
                             if (k !== numCriteria) {
-                                evaluationMatrix += `<div style="margin-right: 3px"><input type="number" value="0" id="assessment-${i}-${j + 1}-${k + 1}" name="assessment-${i}-${j + 1}-${k + 1}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                                evaluationMatrix += `<div style="margin-right: 3px"><input type="number" value="0" id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
                             } else {
-                                evaluationMatrix += `<div><input type="number" value="0" id="assessment-${i}-${j + 1}-${k + 1}" name="assessment-${i}-${j + 1}-${k + 1}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                                evaluationMatrix += `<div><input type="number" value="0" id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
                             }
                         } else {
-                            evaluationMatrix += `<div><select id="assessment-${i}-${j+1}-${k+1}" name="assessment-${i}-${j+1}-${k+1}" style="max-width: 138px">`;
+                            evaluationMatrix += `<div><select id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" style="max-width: 138px">`;
                             let selectedScale = $(`#criteria-${k}-scale-select`).val();
                             if (selectedScale && selectedScale.startsWith('S')) {
                                 let scaleValues = qualitativeScaleValues[selectedScale];
@@ -526,15 +524,91 @@ $("#submit-btn-to-send").click(function () {
     /*
         Главный блок
      */
+    let index = 1;
+    for (let key in scalesFromOntology) {
+        data.scales.push({
+            scaleID: "S" + index,
+            scaleName: key,
+            labels: scalesFromOntology[key]
+        });
+        index++;
+    }
+    data.scales.push({
+        scaleID: "Res",
+        scaleName: "ResScale",
+        labels: [
+        "очень низкий",
+        "низкий",
+        "ниже среднего",
+        "средний",
+        "выше среднего",
+        "высокий",
+        "очень высокий"
+      ]
+    });
+
     for (let i = 1; i <= numExperts; i++) {
-
-
+        let expertName = $(`#expert-${i}-name`).val();
+        let expertId = $(`#expert-${i}-id`).val();
+        let expertCompetence = $(`#expert-${i}-competence`).val().split(", ");
+        data.experts.push({"expertName": expertName, "expertID": expertId, "competencies": expertCompetence});
+        data.estimations[expertId] = [];
+    }
+    for (let i = 1; i <= numAlternative; i++) {
+        let alternativeName = $(`#alternative-${i}-name`).val();
+        let alternativeId = $(`#alternative-${i}-id`).val();
+        data.alternatives.push({"alternativeID": alternativeId, "alternativeName": alternativeName, "abstractionLevelID": "group1"});
+    }
+    for (let i = 1; i <= numCriteria; i++) {
+        let criteriaName = $(`#criteria-${i}-name`).val();
+        let criteriaId = $(`#criteria-${i}-id`).val();
+        data.criteria.group1.push({"criteriaID": criteriaId, "criteriaName": criteriaName, "qualitative": $(`#criteria-${i}-qualitative`).val() === "true"})
+    }
+    let arrayOfExpertsWeights = Array(numExperts).fill((1/numExperts));
+    for (let i = 1; i <= numExperts; i++) {
+        data.expertWeights[$(`#expert-${i}-id`).val()] = arrayOfExpertsWeights[i-1];
+    }
+    for (let i = 1; i <= numExperts; i++) {
+        let expertID = $(`#expert-${i}-id`).val();
         for (let j = 1; j <= numAlternative; j++) {
+            let alternativeID = $(`#alternative-${j}-id`).val();
+            let criteria2Estimation = [];
             for (let k = 1; k <= numCriteria; k++) {
-
+                let criteriaID = $(`#criteria-${k}-id`).val();
+                let estimationData = {
+                    criteriaID: criteriaID,
+                    estimation: [$(`#assessment-${i}-${j}-${k}`).val()]
+                };
+                let isQualitative = $(`#criteria-${k}-qualitative`).val() === 'true';
+                if (isQualitative) {
+                    let selectedScale = $(`#criteria-${k}-scale-select`).val();
+                    if (selectedScale) {
+                        estimationData['scaleID'] = selectedScale;
+                    }
+                }
+                criteria2Estimation.push(estimationData);
             }
+            data.estimations[expertID].push({
+                alternativeID: alternativeID,
+                criteria2Estimation: criteria2Estimation
+            });
         }
     }
+    let jsonString = JSON.stringify(data, null, 2);
+    let blob = new Blob([jsonString], {
+        type: "application/json"
+    });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "data.json";
+    link.click();
+    fetch("/get_file", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(jsonString)
+    }).then(res => res.json()).then(response => console.log(response)).catch(error => console.error("Ошибка", error));
 })
 
 
