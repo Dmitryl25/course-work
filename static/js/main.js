@@ -7,7 +7,8 @@ let qualitativeScaleOptions = "";
 let qualitativeScaleValues = {};
 let scalesFromOntology = {};
 let criteriaLimits = {};
-
+let doesFileResultExist = false;
+let result = {}
 let limits = [];
 let data = {
     "abstractionLevels": [
@@ -32,6 +33,13 @@ let data = {
     "estimations": {}
 };
 
+/*
+1. Изменить "Элементы" - сделать в виде матрицы
+2. После добавления новой альтернативы изобразить в правом большом окне в виде двух окон, где слева старая версия (без альтернативы), а справа новая версия с дополнительной альтернативой
+3. сделать сравнение id с существующими при добавлении новой альтернативы
+4. может добавить units, но пока хз
+5. ещё подебажить
+ */
 
 /*
 Блок заимствованного кода
@@ -97,6 +105,7 @@ function getSelectedCriteriaLimits() {
             let maxLimit = criteriaLimits[key];
             selectedLimits.push(maxLimit);
         });
+        limits = selectedLimits;
         resolve(selectedLimits);
     });
 }
@@ -118,6 +127,8 @@ $(".blue-btn-again").click(function () {
     blocks.forEach(block => block.remove());
     blocks = document.querySelectorAll(".evaluations-block");
     blocks.forEach(block => block.remove());
+    blocks = document.querySelectorAll(".res-block");
+    blocks.forEach(block => block.remove());
 
     blocks = document.querySelectorAll(".infoAboutExperts");
     blocks.forEach(block => block.remove());
@@ -130,25 +141,51 @@ $(".blue-btn-again").click(function () {
     blocks = document.querySelectorAll(".infoAboutAlternative");
     blocks.forEach(block => block.remove());
     $("#alternatives").hide();
-
-
+    function deleteFile() {
+        return $.ajax({
+            url: "/cleanup", // API на сервере, возвращающее статус файла
+            method: "POST",
+            dataType: "json"
+        });
+    }
+    deleteFile().done(function(response) {
+        console.log("Ответ сервера:", response);
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        console.error("Ошибка при вызове cleanup:", textStatus);
+    });
 
     numExperts = 0;
     numCriteria = 0;
     numAlternative = 0;
     $("#main-modal").show();
+    $("#meaningful-modal").show();
     $("#experts-modal").hide();
     $("#number-of-criteria-modal").hide()
     $("#alternatives-modal").hide();
     $("#criteria-modal").hide();
     $("#number-alternatives-modal").hide();
     $("#evaluation-modal").hide();
+    $("#result-modal").hide();
+    $("#result-left-modal").hide();
+
 })
 
 
 
 
 $(document).ready(function () {
+    function deleteFile() {
+        return $.ajax({
+            url: "/cleanup", // API на сервере, возвращающее статус файла
+            method: "POST",
+            dataType: "json"
+        });
+    }
+    deleteFile().done(function(response) {
+        console.log("Ответ сервера:", response);
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        console.error("Ошибка при вызове cleanup:", textStatus);
+    });
     loadQuantitativeScales();
     loadScalesFromOntology();
     $("#submit-btn").click(function () {
@@ -600,28 +637,236 @@ $("#submit-btn-to-send").click(function () {
         url: "/get_file",
         contentType: "application/json",
         data: jsonString,
+        success: function() {
+            waitForFile();
+        },
         error: function (error) {
             console.log("Ошибка:", error);
         }
     });
-    $.ajax({
-        url: "/send_json_to_js",
-        method: "GET",
-        dataType: "json",
-        success: function (data) {
-            console.log(data);
-            let estimations = data.alternativesOrdered;
-            for (let i = 0; i < numAlternative; i++) {
-                console.log(estimations[i])
+    function checkFileExists() {
+        return $.ajax({
+            url: "/check_file", // API на сервере, возвращающее статус файла
+            method: "GET",
+            dataType: "json"
+        });
+    }
+
+    // Функция polling
+    function waitForFile() {
+        const interval = 1000; // проверка раз в секунду
+        const maxAttempts = 30; // максимум попыток (например, 30 секунд)
+        let attempts = 0;
+
+        const poll = () => {
+            checkFileExists().done(function(data) {
+                if (data.exists) {
+                    // Файл есть — вызываем второй AJAX
+                    loadAndDisplayResults();
+                } else {
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        setTimeout(poll, interval);
+                    } else {
+                        console.log("Файл не появился за отведенное время");
+                    }
+                }
+            }).fail(function() {
+                console.log("Ошибка проверки наличия файла");
+            });
+        };
+
+        poll();
+    }
+    function loadAndDisplayResults() {
+        $.ajax({
+            url: "/send_json_to_js",
+            method: "GET",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                let result = data;
+                let estimations = data.alternativesOrdered;
+                let resFields = "";
+                for (let i = 0; i < numAlternative; i++) {
+                    resFields += `<div class="res-block"><span>Альтернатива: ${estimations[i].alternativeID}`;
+                    for (const [key, value] of Object.entries(estimations[i].estimation[0])) {
+                        resFields += ` Оценка: ${value} ${key}</span></div>`;
+                    }
+                }
+                $("#evaluation-modal").hide();
+                $("#result-fields").html(resFields);
+                $("#meaningful-modal").hide();
+                $("#result-modal").show();
+                $("#result-left-modal").show();
+            },
+            error: function (error) {
+                console.log("Ошибка при получении данных:", error);
             }
-        },
-        error: function (error) {
-            console.log("Ошибка");
-        }
-    })
+        });
+    }
 })
 
+$("#submit-btn-to-add-new-alternative").click(function () {
+    $("#result-left-modal").hide();
+    $("#add-alternative-modal").show();
+    let newAlternativeField = "";
+    newAlternativeField += `<div class="alternative-block" id="alternative-block-${numAlternative+1}" style="margin-bottom: 10px"><span class="bold-text" style="padding-bottom: 5px">Альтернатива ${numAlternative + 1}:</span>`;
+    newAlternativeField += `<div class="row_alternatives"><label for="alternative-${numAlternative+1}-id" style="padding-top: 6px">ID:</label> <input type="text" id="alternative-${numAlternative + 1}-id" name="alternative-${numAlternative + 1}-id" required></div>`;
+    newAlternativeField += `<div class="row_alternatives"><label for="alternative-${numAlternative+1}-name" style="padding-top: 6px">Название:</label> <input type="text" id="alternative-${numAlternative+1}-name" name="alternative-${numAlternative+1}-name" required><br></div></div>`;
+    numAlternative = numAlternative + 1;
+    for (let i = 1; i <= numExperts; i++) {
+        newAlternativeField += `<div class="extra-evaluation-block"><strong>Эксперт ${i}</strong>`
+        newAlternativeField += `<div style="display: flex"></div><div style="display: flex; padding-bottom: 5px"><div style="min-width: 120px"></div>`;
+        for (let j = 1; j < numCriteria; j++) {
+            newAlternativeField += `<div style="min-width: 138px; text-align: center; margin-right: 3px"><span>Критерий ${j}</span></div>`;
+        }
+        newAlternativeField += `<div style="min-width: 138px; text-align: center; margin-right: 3px"><span>Критерий ${numCriteria}</span></div></div>`;
+        newAlternativeField += `<div style="display: flex; margin-bottom: 3px"><span style="min-width: 120px; padding-top: 10px">Альтернатива ${numAlternative}</span>`
+        for (let k = 1; k <= numCriteria; k++) {
+            let getIsQuality = document.getElementById(`criteria-${k}-qualitative`);
+            let isQuantity = getIsQuality.options[getIsQuality.selectedIndex].value === "false";
+            if (isQuantity) {
+                let limit = limits[k]
+                if (k !== numCriteria) {
+                    newAlternativeField += `<div style="margin-right: 3px"><input type="number" value="0" id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                } else {
+                    newAlternativeField += `<div><input type="number" value="0" id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                }
+            } else {
+                newAlternativeField += `<div><select id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" style="max-width: 138px">`;
+                let selectedScale = $(`#criteria-${k}-scale-select`).val();
+                if (selectedScale && selectedScale.startsWith('S')) {
+                    let scaleValues = qualitativeScaleValues[selectedScale];
+                    if (scaleValues) {
+                        scaleValues.split(', ').forEach(value => {
+                            newAlternativeField += `<option value="${value.trim()}">${value.trim()}</option>`;
+                        });
+                    }
+                }
+                newAlternativeField += `</select></div>`;
+            }
+        }
+        newAlternativeField += `</div>`;
+    }
+    newAlternativeField += `</div>`;
+    $("#new-alternative-fields").html(newAlternativeField);
+})
 
+$("#submit-btn-to-send-new-alternative").click(function () {
+    function deleteFile() {
+        return $.ajax({
+            url: "/cleanup", // API на сервере, возвращающее статус файла
+            method: "POST",
+            dataType: "json"
+        });
+    }
+    deleteFile().done(function(response) {
+        console.log("Ответ сервера:", response);
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        console.error("Ошибка при вызове cleanup:", textStatus);
+    });
+    let alternativeName = $(`#alternative-${numAlternative}-name`).val();
+    let alternativeId = $(`#alternative-${numAlternative}-id`).val();
+    data.alternatives.push({"alternativeID": alternativeId, "alternativeName": alternativeName, "abstractionLevelID": "group1"})
+    for (let i = 1; i <= numExperts; i++) {
+        let expertID = $(`#expert-${i}-id`).val();
+        let criteria2Estimation = [];
+        for (let k = 1; k <= numCriteria; k++) {
+            let criteriaID = $(`#criteria-${k}-id`).val();
+            let estimationData = {
+                criteriaID: criteriaID,
+                estimation: [$(`#assessment-${i}-${numAlternative}-${k}`).val()]
+            };
+            let isQualitative = $(`#criteria-${k}-qualitative`).val() === 'true';
+            if (isQualitative) {
+                let selectedScale = $(`#criteria-${k}-scale-select`).val();
+                if (selectedScale) {
+                    estimationData['scaleID'] = selectedScale;
+                }
+            }
+            criteria2Estimation.push(estimationData);
+        }
+        data.estimations[expertID].push({
+            alternativeID: alternativeId,
+            criteria2Estimation: criteria2Estimation
+        });
+    }
+    let jsonString = JSON.stringify(data, null, 2);
+    $.ajax({
+        type: "POST",
+        url: "/get_file",
+        contentType: "application/json",
+        data: jsonString,
+        success: function() {
+            waitForFile();
+        },
+        error: function (error) {
+            console.log("Ошибка:", error);
+        }
+    });
+    function checkFileExists() {
+        return $.ajax({
+            url: "/check_file", // API на сервере, возвращающее статус файла
+            method: "GET",
+            dataType: "json"
+        });
+    }
+
+    // Функция polling
+    function waitForFile() {
+        const interval = 1000; // проверка раз в секунду
+        const maxAttempts = 30; // максимум попыток (например, 30 секунд)
+        let attempts = 0;
+
+        const poll = () => {
+            checkFileExists().done(function(data) {
+                if (data.exists) {
+                    // Файл есть — вызываем второй AJAX
+                    loadAndDisplayResults();
+                } else {
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        setTimeout(poll, interval);
+                    } else {
+                        console.log("Файл не появился за отведенное время");
+                    }
+                }
+            }).fail(function() {
+                console.log("Ошибка проверки наличия файла");
+            });
+        };
+
+        poll();
+    }
+    function loadAndDisplayResults() {
+        $.ajax({
+            url: "/send_json_to_js",
+            method: "GET",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                let estimations = data.alternativesOrdered;
+                let resFields = "";
+                for (let i = 0; i < numAlternative; i++) {
+                    resFields += `<div class="res-block"><span>Альтернатива: ${estimations[i].alternativeID}`;
+                    for (const [key, value] of Object.entries(estimations[i].estimation[0])) {
+                        resFields += ` Оценка: ${value} ${key}</span></div>`;
+                    }
+                }
+                $("#add-alternative-modal").hide();
+                $("#evaluation-modal").hide();
+                $("#result-fields").html(resFields);
+                $("#meaningful-modal").hide();
+                $("#result-modal").show();
+                $("#result-left-modal").show();
+            },
+            error: function (error) {
+                console.log("Ошибка при получении данных:", error);
+            }
+        });
+    }
+})
 
 
 
