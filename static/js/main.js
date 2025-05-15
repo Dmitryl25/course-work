@@ -595,20 +595,30 @@ $("#submit-btn-to-send").click(function () {
         }
     }
     let jsonString = JSON.stringify(data, null, 2);
-    let blob = new Blob([jsonString], {
-        type: "application/json"
+    $.ajax({
+        type: "POST",
+        url: "/get_file",
+        contentType: "application/json",
+        data: jsonString,
+        error: function (error) {
+            console.log("Ошибка:", error);
+        }
     });
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "data.json";
-    link.click();
-    fetch("/get_file", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
+    $.ajax({
+        url: "/send_json_to_js",
+        method: "GET",
+        dataType: "json",
+        success: function (data) {
+            console.log(data);
+            let estimations = data.alternativesOrdered;
+            for (let i = 0; i < numAlternative; i++) {
+                console.log(estimations[i])
+            }
         },
-        body: JSON.stringify(jsonString)
-    }).then(res => res.json()).then(response => console.log(response)).catch(error => console.error("Ошибка", error));
+        error: function (error) {
+            console.log("Ошибка");
+        }
+    })
 })
 
 
