@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 from flask_cors import CORS
+from flask import send_file
 app = Flask(__name__)
 CORS(app)
 
@@ -43,7 +44,7 @@ def send_file_to_api(data):
         return jsonify({"error": f"Failed to write JSON file {e}"})
     if not os.path.isfile(jar_path):
         return jsonify({"error": "No jar"})
-    com = ["java", "-jar", jar_path, "-i", "C:/Users/dimul/Desktop/Inter/data.json", "-o", output_dir]
+    com = ["java", "-jar", jar_path, "-i", input_path, "-o", output_dir]
     try:
         result = subprocess.run(com, capture_output=True, text=True, check=True)
         return jsonify({
@@ -58,13 +59,27 @@ def send_file_to_api(data):
             "stderr": e.stderr
         }), 500
 
+
+@app.route("/send_json_to_js", methods=["GET"])
+def send_json_to_js():
+    with open("result.json", encoding="UTF-8") as f:
+        data = json.load(f)
+    return jsonify(data)
+
 @app.route('/')
 def index():
     return render_template("page.html")
 @app.route("/get_file", methods=["POST"])
 def get_file():
     data = request.get_json()
+    print(type(data))
+    if not data:
+        return jsonify({"error": "Нет данных"})
     response_data = send_file_to_api(data)
+    return response_data
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
