@@ -6,17 +6,28 @@ import os
 import subprocess
 from flask_cors import CORS
 from flask import send_file
+RESULT_PATH = "C:/Users/dimul/Desktop/Inter/result.json"
+if os.path.exists(RESULT_PATH):
+    os.remove(RESULT_PATH)
 app = Flask(__name__)
 CORS(app)
-
 owl_file_path = r'C:\Data\cinema.owl'
+input_path = "C:/Users/dimul/Desktop/Inter/input.json"
+output_dir = "C:/Users/dimul/Desktop/Inter/"
+jar_path = "C:/Users/dimul/Desktop/Inter/lingvo-dss-all.jar"
+
+
 @app.route("/load-scales", methods=["GET"])
 def load_scales():
     g, criteria = load_and_process_owl(owl_file_path)
     scales = generate_evaluation_scales(criteria, g)
     formatted_scales = {prop: details['details']['values'] for prop, details in scales.items() if details['type'] == 'Качественный'}
     return jsonify(formatted_scales)
-
+@app.route('/cleanup', methods=['POST'])
+def cleanup():
+    if os.path.exists(RESULT_PATH):
+        os.remove(RESULT_PATH)
+    return jsonify({"status": "success", "message": "Cleanup completed"})
 
 @app.route("/load-quantitative-scales", methods=["GET"])
 def load_quantitative_scales():
@@ -33,9 +44,6 @@ def load_quantitative_scales():
 
 
 def send_file_to_api(data):
-    input_path = "C:/Users/dimul/Desktop/Inter/input.json"
-    output_dir = "C:/Users/dimul/Desktop/Inter/"
-    jar_path = "C:/Users/dimul/Desktop/Inter/lingvo-dss-all.jar"
     os.makedirs((os.path.dirname(input_path)), exist_ok=True)
     try:
         with open(input_path, "w", encoding="UTF-8") as f:
@@ -47,6 +55,8 @@ def send_file_to_api(data):
     com = ["java", "-jar", jar_path, "-i", input_path, "-o", output_dir]
     try:
         result = subprocess.run(com, capture_output=True, text=True, check=True)
+        while not os.path.exists("result.json"):
+            pass
         return jsonify({
             "status": "success",
             "stdout": result.stdout,
@@ -58,11 +68,14 @@ def send_file_to_api(data):
             "stdout": e.stdout,
             "stderr": e.stderr
         }), 500
-
+@app.route('/check_file', methods=['GET'])
+def check_file():
+    exists = os.path.exists(RESULT_PATH)
+    return jsonify({'exists': exists})
 
 @app.route("/send_json_to_js", methods=["GET"])
 def send_json_to_js():
-    with open("result.json", encoding="UTF-8") as f:
+    with open(RESULT_PATH, encoding="UTF-8") as f:
         data = json.load(f)
     return jsonify(data)
 
