@@ -55,7 +55,7 @@ select {
 #left {
   width: 50%;
 }
-#main-modal, #experts-modal, #number-alternatives-modal, #alternatives-modal, #criteria-modal, #number-of-criteria-modal, #evaluation-modal {
+#main-modal, #experts-modal, #number-alternatives-modal, #alternatives-modal, #criteria-modal, #number-of-criteria-modal, #evaluation-modal, #result-left-modal, #add-alternative-modal {
   width: 99%;
   overflow-y: auto;
   overflow-x: auto;
@@ -214,6 +214,25 @@ select {
 }
 
 .evaluations-block input {
+  border: 1px solid #ccc;
+  font-size: 16px;
+  border-radius: 4px;
+}
+
+#result-modal {
+  flex-grow: 1;
+  height: 80%;
+  max-width: 49.55%;
+  box-shadow: 0 0 10px #000;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  padding: 15px 30px;
+  background: #fff;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.extra-evaluation-block input {
   border: 1px solid #ccc;
   font-size: 16px;
   border-radius: 4px;
