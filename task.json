@@ -1,0 +1,294 @@
+{
+  "abstractionLevels": [
+    {
+      "abstractionLevelID": "group1",
+      "abstractionLevelName": "Abstraction level no. 1"
+    }
+  ],
+  "abstractionLevelWeights": {
+    "group1": 1
+  },
+  "scales": [
+    {
+      "scaleID": "s7_fuzzy",
+      "scaleName": "Fuzzy Linguistic Scale with 7 elements",
+      "labels": [
+        "vp",
+        "p",
+        "mp",
+        "m",
+        "mg",
+        "g",
+        "vg"
+      ]
+    },
+    {
+      "scaleID": "s5",
+      "scaleName": "3 elements",
+      "labels": [
+        "хорошо",
+        "очень хорошо",
+        "превосходно"
+      ]
+    }
+  ],
+  "criteria": {
+    "group1": [
+      {
+        "criteriaID": "C1",
+        "criteriaName": "Maximum speed",
+        "qualitative": false,
+        "units": "Mach",
+        "benefit": true
+      },
+      {
+        "criteriaID": "C2",
+        "criteriaName": "Ferry range",
+        "qualitative": false,
+        "units": "NM",
+        "benefit": true
+      },
+      {
+        "criteriaID": "C3",
+        "criteriaName": "Maximum payload",
+        "qualitative": false,
+        "units": "pounds",
+        "benefit": true
+      },
+      {
+        "criteriaID": "C4",
+        "criteriaName": "Purchasing cost",
+        "qualitative": false,
+        "units": "$M",
+        "benefit": false
+      },
+      {
+        "criteriaID": "C5",
+        "criteriaName": "Reliability",
+        "qualitative": true,
+        "units": "High-Low",
+        "benefit": true
+      },
+      {
+        "criteriaID": "C6",
+        "criteriaName": "Maneuverability",
+        "qualitative": true,
+        "units": "High-Low",
+        "benefit": true
+      }
+    ]
+  },
+  "alternatives": [
+    {
+      "alternativeID": "A1",
+      "alternativeName": "Jet Fighter no. erfervfergesrg sreg srtt gsrth strhdtrhdtrh dtrhb",
+      "abstractionLevelID": "group1"
+    },
+    {
+      "alternativeID": "A2",
+      "alternativeName": "Jet Fighter no. 2",
+      "abstractionLevelID": "group1"
+    },
+    {
+      "alternativeID": "A3",
+      "alternativeName": "Jet Fighter no. 3",
+      "abstractionLevelID": "group1"
+    },
+    {
+      "alternativeID": "A4",
+      "alternativeName": "Jet Fighter no. 4",
+      "abstractionLevelID": "group1"
+    }
+  ],
+  "expertWeightsRule": {
+    "1": 1.0
+  },
+  "expertWeights": {
+    "expert1": 1.0
+  },
+  "experts": [
+    {
+      "expertName": "US Army expert no. 1",
+      "expertID": "expert1",
+      "competencies": [
+        "jet fighters"
+      ]
+    }
+  ],
+  "estimations": {
+    "expert1": [
+      {
+        "alternativeID": "A1",
+        "criteria2Estimation": [
+          {
+            "criteriaID": "C1",
+            "estimation": [
+              "2.0"
+            ]
+          },
+          {
+            "criteriaID": "C2",
+            "estimation": [
+              "1500"
+            ]
+          },
+          {
+            "criteriaID": "C3",
+            "estimation": [
+              "20000"
+            ]
+          },
+          {
+            "criteriaID": "C4",
+            "estimation": [
+              "5.5"
+            ]
+          },
+          {
+            "criteriaID": "C5",
+            "estimation": [
+              "хорошо"
+            ],
+            "scaleID": "s5"
+          },
+          {
+            "criteriaID": "C6",
+            "estimation": [
+              "хорошо"
+            ],
+            "scaleID": "s5"
+          }
+        ]
+      },
+      {
+        "alternativeID": "A2",
+        "criteria2Estimation": [
+          {
+            "criteriaID": "C1",
+            "estimation": [
+              "2.5"
+            ]
+          },
+          {
+            "criteriaID": "C2",
+            "estimation": [
+              "2700"
+            ]
+          },
+          {
+            "criteriaID": "C3",
+            "estimation": [
+              "18000"
+            ]
+          },
+          {
+            "criteriaID": "C4",
+            "estimation": [
+              "6.5"
+            ]
+          },
+          {
+            "criteriaID": "C5",
+            "estimation": [
+              "хорошо"
+            ],
+            "scaleID": "s5"
+          },
+          {
+            "criteriaID": "C6",
+            "estimation": [
+              "хорошо"
+            ],
+            "scaleID": "s5"
+          }
+        ]
+      },
+      {
+        "alternativeID": "A3",
+        "criteria2Estimation": [
+          {
+            "criteriaID": "C1",
+            "estimation": [
+              "1.8"
+            ]
+          },
+          {
+            "criteriaID": "C2",
+            "estimation": [
+              "2000"
+            ]
+          },
+          {
+            "criteriaID": "C3",
+            "estimation": [
+              "21000"
+            ]
+          },
+          {
+            "criteriaID": "C4",
+            "estimation": [
+              "4.5"
+            ]
+          },
+          {
+            "criteriaID": "C5",
+            "estimation": [
+              "хорошо"
+            ],
+            "scaleID": "s5"
+          },
+          {
+            "criteriaID": "C6",
+            "estimation": [
+              "хорошо"
+            ],
+            "scaleID": "s5"
+          }
+        ]
+      },
+      {
+        "alternativeID": "A4",
+        "criteria2Estimation": [
+          {
+            "criteriaID": "C1",
+            "estimation": [
+              "2.2"
+            ]
+          },
+          {
+            "criteriaID": "C2",
+            "estimation": [
+              "1800"
+            ]
+          },
+          {
+            "criteriaID": "C3",
+            "estimation": [
+              "20000"
+            ]
+          },
+          {
+            "criteriaID": "C4",
+            "estimation": [
+              "5.0"
+            ]
+          },
+          {
+            "criteriaID": "C5",
+            "estimation": [
+              "хорошо"
+            ],
+            "scaleID": "s5"
+          },
+          {
+            "criteriaID": "C6",
+            "estimation": [
+              "хорошо"
+            ],
+            "scaleID": "s5"
+          }
+        ]
+      }
+    ]
+  }
+}
