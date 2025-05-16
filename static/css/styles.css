@@ -55,7 +55,7 @@ select {
 #left {
   width: 50%;
 }
-#main-modal, #experts-modal, #number-alternatives-modal, #alternatives-modal, #criteria-modal, #number-of-criteria-modal, #evaluation-modal, #result-left-modal, #add-alternative-modal {
+#main-modal, #experts-modal, #number-alternatives-modal, #alternatives-modal, #criteria-modal, #number-of-criteria-modal, #evaluation-modal, #result-left-modal, #add-alternative-modal, #old-result-modal {
   width: 99%;
   overflow-y: auto;
   overflow-x: auto;
