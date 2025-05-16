@@ -124,19 +124,24 @@
    </div>
   </div>
   <div id="result-left-modal" class="window" style="display: none;">
+      <h2>Результаты</h2>
+      <div id="result-fields"></div>
     <div style="display: flex">
        <div style="padding-top: 30px">
            <button class="blue-btn-again" style="width: 141px">Начать заново</button>
        </div>
-          <div style="width: 45%"></div>
+          <div style="width: 55%"></div>
         <div style="text-align: right; margin-bottom: 1em; margin-top: 2em;">
-            <button id="submit-btn-to-add-new-alternative" class="blue-btn">Добавить альтернативу</button>
+            <button id="submit-btn-to-add-new-alternative" class="blue-btn" style="min-width: 208px">Добавить альтернативу</button>
         </div>
    </div>
  </div>
  <div id="add-alternative-modal" class="window" style="display: none;">
     <h2>Заполните необходимые данные о новой альтернативе</h2>
     <div id="new-alternative-fields"></div>
+     <div id="warningNewAlternative" style="padding-left: 120px; display: none">
+         <p id="New-alternative-warning-text" style="color: red">Заполнены не все поля</p>
+     </div>
     <div style="display: flex">
        <div style="padding-top: 30px">
            <button class="blue-btn-again" style="width: 141px">Начать заново</button>
@@ -148,6 +153,10 @@
         </div>
    </div>
  </div>
+   <div id="old-result-modal" class="window" style="display: none; margin-top: 10px">
+    <h2>Предыдущие результаты</h2>
+    <div id="old-result-fields"></div>
+  </div>
 </div>
  <div id="meaningful-modal" style="display: block;">
     <h2 style="font-size: 30px">Элементы</h2>
@@ -156,10 +165,6 @@
         <div id="criteria" class="window" style="display: none"></div>
         <div id="alternatives" class="window" style="display: none"></div>
     </div>
-  </div>
- <div id="result-modal" style="display: none;">
-    <h2 style="font-size: 30px">Результаты</h2>
-    <div id="result-fields"></div>
   </div>
 </div>
 
