@@ -133,6 +133,9 @@ $(".blue-btn-again").click(function () {
     blocks.forEach(block => block.remove());
     blocks = document.querySelectorAll(".res-block");
     blocks.forEach(block => block.remove());
+    blocks = document.querySelectorAll(".window-about-old-result");
+    blocks.forEach(block => block.remove());
+
 
     blocks = document.querySelectorAll(".infoAboutExperts");
     blocks.forEach(block => block.remove());
@@ -193,6 +196,7 @@ $(".blue-btn-again").click(function () {
     $("#evaluation-modal").hide();
     $("#result-modal").hide();
     $("#result-left-modal").hide();
+    $("#old-result-modal").hide();
 
 })
 
@@ -291,8 +295,8 @@ $("#submit-btn-to-number-of-criteria").click(function () {
             infoAboutExperts += `<div style="display: flex; margin-bottom: 10px">`;
             infoAboutExperts += `<div class="infoAboutExperts" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Эксперт ${i}</span></div>`;
             infoAboutExperts += `<div>`;
-            infoAboutExperts += `<div style="min-width: 100px; padding-left: 10px">ID: ${id}</div>`;
             infoAboutExperts += `<div style="min-width: 150px; padding-left: 10px">Имя: ${name}</div>`;
+            infoAboutExperts += `<div style="min-width: 100px; padding-left: 10px">ID: ${id}</div>`;
             infoAboutExperts += `<div style="min-width: 150px; padding-left: 10px">Компетенция: ${comp}</div>`;
             infoAboutExperts += `</div>`;
             infoAboutExperts += `</div>`;
@@ -369,7 +373,7 @@ $("#submit-btn-to-criteria").click(function () {
             for (let i = 1; i <= numCriteria; i++) {
                 criteriaFields += `<div class="criteria-block" id="criteria-block-${i}"><strong style="padding-bottom: 3px">Критерий ${i}:</strong>`;
                 criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="criteria-${i}-id" name="criteria-${i}-id" required><br></div>`;
-                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-name" style="padding-top: 6px">Имя:</label> <input type="text" id="criteria-${i}-name" name="criteria-${i}-name" required><br></div>`;
+                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-name" style="padding-top: 6px">Название:</label> <input type="text" id="criteria-${i}-name" name="criteria-${i}-name" required><br></div>`;
                 criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-qualitative" style="padding-top: 4px">Качественный критерий:</label> <select id="criteria-${i}-qualitative" name="criteria-${i}-qualitative"><option value="false">false</option><option value="true">true</option></select><br></div>`;
                 criteriaFields += `<div class="row-criterias" id="criteria-${i}-scale" style="display: none;"><label for="criteria-${i}-scale-select"">Выберите шкалу:</label> <select id="criteria-${i}-scale-select" name="criteria-${i}-scale-select"></select><br></div>`;
                 criteriaFields += `<div class="row-criterias" id="criteria-${i}-limit"><label for="criteria-${i}-limit-select" style="padding-top: 10px">Ограничение:</label> <select id="criteria-${i}-limit-select" name="criteria-${i}-limit-select">${quantitativeLimitsOptions}</select><br></div>`;
@@ -437,12 +441,33 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
             /*
             Здесь еще обработка шкал для каждого критерия
              */
+            let isQualitative = $(`#criteria-${i}-qualitative`).val() === 'true';
+
             infoAboutCriteria += `<div style="display: flex; margin-bottom: 10px">`;
             infoAboutCriteria += `<div class="infoAboutCriteria" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Критерий ${i}</span></div>`;
             infoAboutCriteria += `<div>`;
+            infoAboutCriteria += `<div style="min-width: 150px; padding-left: 10px">Название: ${name}</div>`;
             infoAboutCriteria += `<div style="min-width: 100px; padding-left: 10px">ID: ${id}</div>`;
-            infoAboutCriteria += `<div style="min-width: 150px; padding-left: 10px">Имя: ${name}</div>`;
-            infoAboutCriteria += `<div style="min-width: 150px; padding-left: 10px">Качественная шкала:: ${isQuality}</div>`;
+            if (isQualitative) {
+                infoAboutCriteria += `<div style="min-width: 150px; padding-left: 10px">Шкала: `;
+                let selectedScale = $(`#criteria-${i}-scale-select`).val();
+                if (selectedScale && selectedScale.startsWith('S')) {
+                    let scaleValues = qualitativeScaleValues[selectedScale];
+                    if (scaleValues) {
+                        let arr = scaleValues.split(', ');
+                        for (let j = 0; j < arr.length - 1; j++) {
+                            infoAboutCriteria += `${arr[j]}, `
+                        }
+                        infoAboutCriteria += `${arr[arr.length - 1]}`
+                        infoAboutCriteria += `</div>`;
+                    }
+                }
+            } else {
+                let selectedLimit = $(`#criteria-${i}-limit-select`).val();
+                let limit = criteriaLimits[selectedLimit];
+                let min = criteriaMin[selectedLimit];
+                infoAboutCriteria += `<div style="min-width: 150px; padding-left: 10px">Шкала: от ${min} до ${limit}</div>`;
+            }
             infoAboutCriteria += `</div>`;
             infoAboutCriteria += `</div>`;
         }
@@ -504,10 +529,10 @@ $("#submit-btn-to-evaluate").click(function () {
             let id = document.getElementById(`alternative-${i}-id`).value;
             let name = document.getElementById(`alternative-${i}-name`).value;
             infoAboutAlternative += `<div style="display: flex; margin-bottom: 10px">`;
-            infoAboutAlternative += `<div class="infoAboutAlternative" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Эксперт ${i}</span></div>`;
+            infoAboutAlternative += `<div class="infoAboutAlternative" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Альтернатива ${i}</span></div>`;
             infoAboutAlternative += `<div>`;
+            infoAboutAlternative += `<div style="min-width: 150px; padding-left: 10px">Название: ${name}</div>`;
             infoAboutAlternative += `<div style="min-width: 100px; padding-left: 10px">ID: ${id}</div>`;
-            infoAboutAlternative += `<div style="min-width: 150px; padding-left: 10px">Имя: ${name}</div>`;
             infoAboutAlternative += `</div>`;
             infoAboutAlternative += `</div>`;
         }
@@ -537,12 +562,12 @@ $("#submit-btn-to-evaluate").click(function () {
                             let limit = criteriaLimits[selectedLimit];
                             let min = criteriaMin[selectedLimit];
                             if (k !== numCriteria) {
-                                evaluationMatrix += `<div style="margin-right: 3px"><input type="number" value="${min}" id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                                evaluationMatrix += `<div style="margin-right: 3px"><input type="number" value="${min}" id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-height: 38px; min-width: 138px; box-sizing: border-box"></div>`;
                             } else {
-                                evaluationMatrix += `<div><input type="number" value="${min}" id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                                evaluationMatrix += `<div><input type="number" value="${min}" id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
                             }
                         } else {
-                            evaluationMatrix += `<div><select id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" style="max-width: 138px">`;
+                            evaluationMatrix += `<div style="margin-right: 3px"><select id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" style="max-width: 138px">`;
                             let selectedScale = $(`#criteria-${k}-scale-select`).val();
                             if (selectedScale && selectedScale.startsWith('S')) {
                                 let scaleValues = qualitativeScaleValues[selectedScale];
@@ -628,6 +653,7 @@ $("#submit-btn-to-send").click(function () {
         let alternativeName = $(`#alternative-${i}-name`).val();
         let alternativeId = $(`#alternative-${i}-id`).val();
         data.alternatives.push({"alternativeID": alternativeId, "alternativeName": alternativeName, "abstractionLevelID": "group1"});
+        alternativeIdHashTable[alternativeId] = alternativeId;
     }
     for (let i = 1; i <= numCriteria; i++) {
         let criteriaName = $(`#criteria-${i}-name`).val();
@@ -736,10 +762,10 @@ $("#submit-btn-to-send").click(function () {
                 let resFields = "";
                 for (let i = 0; i < resultLenOfAlternatives; i++) {
                     resFields += `<div style="display: flex; margin-bottom: 10px">`;
-                    resFields += `<div class="resInfo" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Альтернатива: ${i + 1}</span></div>`;
+                    resFields += `<div class="resInfo" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Альтернатива:</span></div>`;
                     resFields += `<div>`;
+                    resFields += `<div style="min-width: 150px; padding-left: 10px">${alternativeNames[estimations[i].alternativeID]}</div>`;
                     resFields += `<div style="min-width: 100px; padding-left: 10px">ID: ${estimations[i].alternativeID}</div>`;
-                    resFields += `<div style="min-width: 150px; padding-left: 10px">Название: ${alternativeNames[estimations[i].alternativeID]}</div>`;
                     let evaluation = Object.keys(estimations[i].estimation[0])[0];
                     resFields += `<div style="min-width: 150px; padding-left: 10px; font-weight: bold">Оценка: ${evaluation}</div>`;
                     resFields += `</div>`;
@@ -781,12 +807,12 @@ $("#submit-btn-to-add-new-alternative").click(function () {
                 let limit = criteriaLimits[selectedLimit];
                 let min = criteriaMin[selectedLimit];
                 if (k !== numCriteria) {
-                    newAlternativeField += `<div style="margin-right: 3px"><input type="number" value="${min}" id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                    newAlternativeField += `<div style="margin-right: 3px"><input type="number" value="${min}" id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
                 } else {
-                    newAlternativeField += `<div><input type="number" value="${min}" id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                    newAlternativeField += `<div><input type="number" value="${min}" id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-height: 38px; min-width: 138px; box-sizing: border-box"></div>`;
                 }
             } else {
-                newAlternativeField += `<div><select id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" style="max-width: 138px">`;
+                newAlternativeField += `<div><select id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" style="max-width: 138px; min-width: 138px;">`;
                 let selectedScale = $(`#criteria-${k}-scale-select`).val();
                 if (selectedScale && selectedScale.startsWith('S')) {
                     let scaleValues = qualitativeScaleValues[selectedScale];
@@ -952,8 +978,8 @@ $("#submit-btn-to-send-new-alternative").click(function () {
                     estimations = itogData;
                     resultData = estimations;
                     let resFields = "";
-                    for (let i = 0; i < numAlternative; i++) {
-                        resFields += `<div style="display: flex; margin-bottom: 10px">`;
+                    for (let i = 0; i < itogData.length; i++) {
+                        resFields += `<div class="window-about-old-result" style="display: flex; margin-bottom: 10px">`;
                         resFields += `<div class="resInfo" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Альтернатива: ${i + 1}</span></div>`;
                         resFields += `<div>`;
                         resFields += `<div style="min-width: 100px; padding-left: 10px">ID: ${estimations[i].alternativeID}</div>`;
