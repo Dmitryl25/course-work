@@ -7,9 +7,15 @@ let qualitativeScaleOptions = "";
 let qualitativeScaleValues = {};
 let scalesFromOntology = {};
 let criteriaLimits = {};
+let criteriaMin = {};
 let doesFileResultExist = false;
-let result = {}
+let result = {};
 let limits = [];
+let arr_min = [];
+let alternativeIdHashTable = {}
+let alternativeNames = {};
+let resultData = {};
+let resultLenOfAlternatives;
 let data = {
     "abstractionLevels": [
         {
@@ -36,9 +42,8 @@ let data = {
 /*
 1. Изменить "Элементы" - сделать в виде матрицы
 2. После добавления новой альтернативы изобразить в правом большом окне в виде двух окон, где слева старая версия (без альтернативы), а справа новая версия с дополнительной альтернативой
-3. сделать сравнение id с существующими при добавлении новой альтернативы
-4. может добавить units, но пока хз
-5. ещё подебажить
+3. может добавить units, но пока хз
+4. ещё подебажить
  */
 
 /*
@@ -71,18 +76,11 @@ function loadQuantitativeScales() {
     return new Promise((resolve, reject) => {
         $.getJSON('/load-quantitative-scales', function (data) {
             console.log("Loaded quantitative scales: ", data);
-            quantitativeLimitsOptions = Object.entries(data).map(([key, {
-                                min,
-                                max
-                            }
-                        ], i) =>
+            quantitativeLimitsOptions = Object.entries(data).map(([key, {min, max}], i) =>
 `<option value="${key}">R${i+1} (${key}): Minimum: ${min}, Maximum: ${max}</option>`).join('');
-            formattedQuantitativeLimitsOptions = Object.entries(data).map(([key, {
-                                min,
-                                max
-                            }
-                        ], i) => {
+            formattedQuantitativeLimitsOptions = Object.entries(data).map(([key, {min, max}], i) => {
                     criteriaLimits[key] = max;
+                    criteriaMin[key] = min;
                     return `<div><strong>R${i+1} (${key})</strong>: Minimum: ${min}, Maximum: ${max}</div>`;
                 }).join('');
             console.log("Criteria Limits after loading: ", criteriaLimits);
@@ -98,13 +96,19 @@ function loadQuantitativeScales() {
 function getSelectedCriteriaLimits() {
     return new Promise((resolve, reject) => {
         let selectedLimits = [];
+        let selectedMin = [];
         $('.criteria-block').each(function () {
             let limitSelect = $(this).find('select[id^="criteria-"][id$="-limit-select"]');
             let selectedLimit = limitSelect.find('option:selected').text();
             let key = selectedLimit.match(/\(([^)]+)\)/)[1];
             let maxLimit = criteriaLimits[key];
+            console.log(criteriaLimits);
+            console.log(criteriaMin);
+            let minLimit = criteriaMin[key];
             selectedLimits.push(maxLimit);
+            selectedMin.push(minLimit);
         });
+        arr_min = selectedMin;
         limits = selectedLimits;
         resolve(selectedLimits);
     });
@@ -148,6 +152,28 @@ $(".blue-btn-again").click(function () {
             dataType: "json"
         });
     }
+    data = {
+        "abstractionLevels": [
+            {
+                "abstractionLevelID": "group1",
+                "abstractionLevelName": "Abstraction level no. 1"
+            }
+        ],
+        "abstractionLevelWeights": {
+            "group1": 1.0
+        },
+        "scales": [],
+        "criteria": {
+            "group1": []
+        },
+        "alternatives": [],
+        "expertWeightsRule": {
+            "1": 1.0
+        },
+        "expertWeights": {},
+        "experts": [],
+        "estimations": {}
+    };
     deleteFile().done(function(response) {
         console.log("Ответ сервера:", response);
     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -256,18 +282,21 @@ $("#submit-btn-to-number-of-criteria").click(function () {
         }
     }
     if (allFilled && goodId) {
-        let infoAboutExperts = ""
-        infoAboutExperts += '<div class="infoAboutExperts" style="margin-bottom: 10px"><span style="font-size: 24px">Эксперты</span></div>'
-        for (let i = 1; i < numExperts; i++) {
+        let infoAboutExperts = "";
+        infoAboutExperts += `<div class="infoAboutExperts" style="margin-bottom: 15px"><span style="font-size: 24px; font-weight: bold">Эксперты</span></div>`;
+        for (let i = 1; i <= numExperts; i++) {
             let id = document.getElementById(`expert-${i}-id`).value;
             let name = document.getElementById(`expert-${i}-name`).value;
             let comp = document.getElementById(`expert-${i}-competence`).value;
-            infoAboutExperts += `<div class="infoAboutExperts" style="margin-bottom: 5px"><span class="bold-text">Эксперт ${i}: ID: ${id};  Имя: ${name};  Компетенция: ${comp}</span></div>`;
+            infoAboutExperts += `<div style="display: flex; margin-bottom: 10px">`;
+            infoAboutExperts += `<div class="infoAboutExperts" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Эксперт ${i}</span></div>`;
+            infoAboutExperts += `<div>`;
+            infoAboutExperts += `<div style="min-width: 100px; padding-left: 10px">ID: ${id}</div>`;
+            infoAboutExperts += `<div style="min-width: 150px; padding-left: 10px">Имя: ${name}</div>`;
+            infoAboutExperts += `<div style="min-width: 150px; padding-left: 10px">Компетенция: ${comp}</div>`;
+            infoAboutExperts += `</div>`;
+            infoAboutExperts += `</div>`;
         }
-        let id = document.getElementById(`expert-${numExperts}-id`).value;
-        let name = document.getElementById(`expert-${numExperts}-name`).value;
-        let comp = document.getElementById(`expert-${numExperts}-competence`).value;
-        infoAboutExperts += `<div class="infoAboutExperts"><span class="bold-text">Эксперт ${numExperts}: ID: ${id};  Имя: ${name};  Компетенция: ${comp}</span></div>`;
         $("#experts").html(infoAboutExperts).show();
 
         $("#meaningful-fields").show();
@@ -399,8 +428,8 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
             $(`#criteria-${i}-name`).css("border", "");
         }
         let infoAboutCriteria = "";
-        infoAboutCriteria += '<div class="infoAboutCriteria" style="margin-bottom: 10px"><span style="font-size: 24px">Критерии</span></div>';
-        for (let i = 1; i < numCriteria; i++) {
+        infoAboutCriteria += `<div class="infoAboutCriteria" style="margin-bottom: 15px"><span style="font-size: 24px; font-weight: bold">Критерии</span></div>`;
+        for (let i = 1; i <= numCriteria; i++) {
             let id = document.getElementById(`criteria-${i}-id`).value;
             let name = document.getElementById(`criteria-${i}-name`).value;
             let isQuality = document.getElementById(`criteria-${i}-qualitative`);
@@ -408,26 +437,28 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
             /*
             Здесь еще обработка шкал для каждого критерия
              */
-            infoAboutCriteria += `<div class="infoAboutCriteria" style="margin-bottom: 5px"><span class="bold-text">Критерий ${i}:  ID: ${id};  Имя: ${name}; Качественная шкала: ${isQuality}</span></div>`;
+            infoAboutCriteria += `<div style="display: flex; margin-bottom: 10px">`;
+            infoAboutCriteria += `<div class="infoAboutCriteria" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Критерий ${i}</span></div>`;
+            infoAboutCriteria += `<div>`;
+            infoAboutCriteria += `<div style="min-width: 100px; padding-left: 10px">ID: ${id}</div>`;
+            infoAboutCriteria += `<div style="min-width: 150px; padding-left: 10px">Имя: ${name}</div>`;
+            infoAboutCriteria += `<div style="min-width: 150px; padding-left: 10px">Качественная шкала:: ${isQuality}</div>`;
+            infoAboutCriteria += `</div>`;
+            infoAboutCriteria += `</div>`;
         }
-        let id = document.getElementById(`criteria-${numCriteria}-id`).value;
-        let name = document.getElementById(`criteria-${numCriteria}-name`).value;
-        let isQuality = document.getElementById(`criteria-${numCriteria}-qualitative`);
-            isQuality = isQuality.options[isQuality.selectedIndex].value;
-        infoAboutCriteria += `<div class="infoAboutCriteria"><span class="bold-text">Критерий ${numCriteria}:  ID: ${id};  Имя: ${name}; Качественная шкала: ${isQuality}</span></div>`;
         $("#criteria").html(infoAboutCriteria).show();
         $("#warningCriteria").hide();
         $("#number-alternatives-modal").show();
     } else {
         if (!goodId && !allFilled) {
-            document.getElementById("Criteria-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)"
+            document.getElementById("Criteria-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)";
         } else if (!goodId) {
-            document.getElementById("Criteria-warning-text").textContent = "Id критериев совпадают"
+            document.getElementById("Criteria-warning-text").textContent = "Id критериев совпадают";
         } else {
-            document.getElementById("Criteria-warning-text").textContent = "Не все поля заполнены"
+            document.getElementById("Criteria-warning-text").textContent = "Не все поля заполнены";
         }
 
-        $("#warningCriteria").show()
+        $("#warningCriteria").show();
     }
 });
 
@@ -467,23 +498,19 @@ $("#submit-btn-to-evaluate").click(function () {
     }
 
     if (allFilled && goodId) {
-        for (let i = 1; i <= numAlternative; i++) {
-            $(`#alternative-${i}-id`).css("border", "");
-            $(`#alternative-${i}-name`).css("border", "");
-        }
         let infoAboutAlternative = "";
-        infoAboutAlternative += '<div class="infoAboutAlternative" style="margin-bottom: 10px"><span style="font-size: 24px">Альтернативы</span></div>';
-        for (let i = 1; i < numAlternative; i++) {
+        infoAboutAlternative += `<div class="infoAboutAlternative" style="margin-bottom: 15px"><span style="font-size: 24px; font-weight: bold">Альтернативы</span></div>`;
+        for (let i = 1; i <= numAlternative; i++) {
             let id = document.getElementById(`alternative-${i}-id`).value;
             let name = document.getElementById(`alternative-${i}-name`).value;
-            /*
-            Здесь еще обработка шкал для каждого критерия
-             */
-            infoAboutAlternative += `<div class="infoAboutAlternative" style="margin-bottom: 5px"><span class="bold-text">Альтернатива ${i}:  ID: ${id};  Имя: ${name}</span></div>`;
+            infoAboutAlternative += `<div style="display: flex; margin-bottom: 10px">`;
+            infoAboutAlternative += `<div class="infoAboutAlternative" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Эксперт ${i}</span></div>`;
+            infoAboutAlternative += `<div>`;
+            infoAboutAlternative += `<div style="min-width: 100px; padding-left: 10px">ID: ${id}</div>`;
+            infoAboutAlternative += `<div style="min-width: 150px; padding-left: 10px">Имя: ${name}</div>`;
+            infoAboutAlternative += `</div>`;
+            infoAboutAlternative += `</div>`;
         }
-        let id = document.getElementById(`alternative-${numAlternative}-id`).value;
-        let name = document.getElementById(`alternative-${numAlternative}-name`).value;
-        infoAboutAlternative += `<div class="infoAboutAlternative"><span class="bold-text">Альтернатива ${numAlternative}:  ID: ${id};  Имя: ${name}</span></div>`;
         $("#alternatives").html(infoAboutAlternative).show();
 
         $("#alternatives-modal").hide();
@@ -506,11 +533,13 @@ $("#submit-btn-to-evaluate").click(function () {
                         let getIsQuality = document.getElementById(`criteria-${k}-qualitative`);
                         let isQuantity = getIsQuality.options[getIsQuality.selectedIndex].value === "false";
                         if (isQuantity) {
-                            let limit = arr[k]
+                            let selectedLimit = $(`#criteria-${k}-limit-select`).val();
+                            let limit = criteriaLimits[selectedLimit];
+                            let min = criteriaMin[selectedLimit];
                             if (k !== numCriteria) {
-                                evaluationMatrix += `<div style="margin-right: 3px"><input type="number" value="0" id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                                evaluationMatrix += `<div style="margin-right: 3px"><input type="number" value="${min}" id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
                             } else {
-                                evaluationMatrix += `<div><input type="number" value="0" id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                                evaluationMatrix += `<div><input type="number" value="${min}" id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
                             }
                         } else {
                             evaluationMatrix += `<div><select id="assessment-${i}-${j}-${k}" name="assessment-${i}-${j}-${k}" style="max-width: 138px">`;
@@ -531,16 +560,20 @@ $("#submit-btn-to-evaluate").click(function () {
                 }
                 evaluationMatrix += `</div>`;
             }
+            for (let i = 1; i <= numAlternative; i++) {
+                let id = document.getElementById(`alternative-${i}-id`).value;
+                alternativeNames[id] = document.getElementById(`alternative-${i}-name`).value;
+            }
             $("#evaluations-fields").html(evaluationMatrix);
             $("#evaluation-modal").show();
         })
     } else {
         if (!goodId && !allFilled) {
-            document.getElementById("Alternative-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)"
+            document.getElementById("Alternative-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)";
         } else if (!goodId) {
-            document.getElementById("Alternative-warning-text").textContent = "Id критериев совпадают"
+            document.getElementById("Alternative-warning-text").textContent = "Id критериев совпадают";
         } else {
-            document.getElementById("Alternative-warning-text").textContent = "Не все поля заполнены"
+            document.getElementById("Alternative-warning-text").textContent = "Не все поля заполнены";
         }
         $("#warningCriteria").show()
     }
@@ -683,20 +716,37 @@ $("#submit-btn-to-send").click(function () {
             url: "/send_json_to_js",
             method: "GET",
             dataType: "json",
-            success: function (data) {
-                console.log(data);
-                let result = data;
-                let estimations = data.alternativesOrdered;
-                let resFields = "";
-                for (let i = 0; i < numAlternative; i++) {
-                    resFields += `<div class="res-block"><span>Альтернатива: ${estimations[i].alternativeID}`;
-                    for (const [key, value] of Object.entries(estimations[i].estimation[0])) {
-                        resFields += ` Оценка: ${value} ${key}</span></div>`;
+            success: function (newData) {
+                checkDuplicates = {};
+                console.log(newData);
+                let flag = false;
+                let estimations = newData.alternativesOrdered;
+                let itogData = [];
+                for (let i = 0; i < estimations.length; i++) {
+                    if (!checkDuplicates.hasOwnProperty(estimations[i].alternativeID)) {
+                        itogData.push(estimations[i]);
+                        checkDuplicates[estimations[i].alternativeID] = estimations[i].alternativeID;
+                    } else {
+                        flag = true;
                     }
+                }
+                resultLenOfAlternatives = itogData.length;
+                estimations = itogData;
+                resultData = estimations;
+                let resFields = "";
+                for (let i = 0; i < resultLenOfAlternatives; i++) {
+                    resFields += `<div style="display: flex; margin-bottom: 10px">`;
+                    resFields += `<div class="resInfo" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Альтернатива: ${i + 1}</span></div>`;
+                    resFields += `<div>`;
+                    resFields += `<div style="min-width: 100px; padding-left: 10px">ID: ${estimations[i].alternativeID}</div>`;
+                    resFields += `<div style="min-width: 150px; padding-left: 10px">Название: ${alternativeNames[estimations[i].alternativeID]}</div>`;
+                    let evaluation = Object.keys(estimations[i].estimation[0])[0];
+                    resFields += `<div style="min-width: 150px; padding-left: 10px; font-weight: bold">Оценка: ${evaluation}</div>`;
+                    resFields += `</div>`;
+                    resFields += `</div>`;
                 }
                 $("#evaluation-modal").hide();
                 $("#result-fields").html(resFields);
-                $("#meaningful-modal").hide();
                 $("#result-modal").show();
                 $("#result-left-modal").show();
             },
@@ -727,11 +777,13 @@ $("#submit-btn-to-add-new-alternative").click(function () {
             let getIsQuality = document.getElementById(`criteria-${k}-qualitative`);
             let isQuantity = getIsQuality.options[getIsQuality.selectedIndex].value === "false";
             if (isQuantity) {
-                let limit = limits[k]
+                let selectedLimit = $(`#criteria-${k}-limit-select`).val();
+                let limit = criteriaLimits[selectedLimit];
+                let min = criteriaMin[selectedLimit];
                 if (k !== numCriteria) {
-                    newAlternativeField += `<div style="margin-right: 3px"><input type="number" value="0" id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                    newAlternativeField += `<div style="margin-right: 3px"><input type="number" value="${min}" id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
                 } else {
-                    newAlternativeField += `<div><input type="number" value="0" id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
+                    newAlternativeField += `<div><input type="number" value="${min}" id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" min="${min}" max="${limit}" style="max-width: 138px; min-height: 38px; box-sizing: border-box"></div>`;
                 }
             } else {
                 newAlternativeField += `<div><select id="assessment-${i}-${numAlternative}-${k}" name="assessment-${i}-${numAlternative}-${k}" style="max-width: 138px">`;
@@ -754,123 +806,183 @@ $("#submit-btn-to-add-new-alternative").click(function () {
 })
 
 $("#submit-btn-to-send-new-alternative").click(function () {
-    function deleteFile() {
-        return $.ajax({
-            url: "/cleanup", // API на сервере, возвращающее статус файла
-            method: "POST",
-            dataType: "json"
-        });
+    let alternativeID = $(`#alternative-${numAlternative}-id`).val();
+    let isIdGood = true;
+    if (alternativeIdHashTable.hasOwnProperty(alternativeID)) {
+        $(`#alternative-${numAlternative}-id`).css("border", "2px solid red");
+        isIdGood = false;
     }
-    deleteFile().done(function(response) {
-        console.log("Ответ сервера:", response);
-    }).fail(function(jqXHR, textStatus, errorThrown) {
-        console.error("Ошибка при вызове cleanup:", textStatus);
-    });
-    let alternativeName = $(`#alternative-${numAlternative}-name`).val();
-    let alternativeId = $(`#alternative-${numAlternative}-id`).val();
-    data.alternatives.push({"alternativeID": alternativeId, "alternativeName": alternativeName, "abstractionLevelID": "group1"})
-    for (let i = 1; i <= numExperts; i++) {
-        let expertID = $(`#expert-${i}-id`).val();
-        let criteria2Estimation = [];
-        for (let k = 1; k <= numCriteria; k++) {
-            let criteriaID = $(`#criteria-${k}-id`).val();
-            let estimationData = {
-                criteriaID: criteriaID,
-                estimation: [$(`#assessment-${i}-${numAlternative}-${k}`).val()]
-            };
-            let isQualitative = $(`#criteria-${k}-qualitative`).val() === 'true';
-            if (isQualitative) {
-                let selectedScale = $(`#criteria-${k}-scale-select`).val();
-                if (selectedScale) {
-                    estimationData['scaleID'] = selectedScale;
-                }
-            }
-            criteria2Estimation.push(estimationData);
-        }
-        data.estimations[expertID].push({
-            alternativeID: alternativeId,
-            criteria2Estimation: criteria2Estimation
-        });
+    let allFilled = true;
+    if ($(`#alternative-${numAlternative}-id`).val() === "") {
+        $(`#alternative-${numAlternative}-id`).css("border", "2px solid red");
+            allFilled = false
     }
-    let jsonString = JSON.stringify(data, null, 2);
-    $.ajax({
-        type: "POST",
-        url: "/get_file",
-        contentType: "application/json",
-        data: jsonString,
-        success: function() {
-            waitForFile();
-        },
-        error: function (error) {
-            console.log("Ошибка:", error);
-        }
-    });
-    function checkFileExists() {
-        return $.ajax({
-            url: "/check_file", // API на сервере, возвращающее статус файла
-            method: "GET",
-            dataType: "json"
-        });
+    if ($(`#alternative-${numAlternative}-name`).val() === "") {
+        $(`#alternative-${numAlternative}-name`).css("border", "2px solid red");
+        allFilled = false
     }
-
-    // Функция polling
-    function waitForFile() {
-        const interval = 1000; // проверка раз в секунду
-        const maxAttempts = 30; // максимум попыток (например, 30 секунд)
-        let attempts = 0;
-
-        const poll = () => {
-            checkFileExists().done(function(data) {
-                if (data.exists) {
-                    // Файл есть — вызываем второй AJAX
-                    loadAndDisplayResults();
-                } else {
-                    attempts++;
-                    if (attempts < maxAttempts) {
-                        setTimeout(poll, interval);
-                    } else {
-                        console.log("Файл не появился за отведенное время");
-                    }
-                }
-            }).fail(function() {
-                console.log("Ошибка проверки наличия файла");
+    if (isIdGood && allFilled) {
+        $("#warningNewAlternative").hide();
+        $(`#alternative-${numAlternative}-id`).css("border", "");
+        $(`#alternative-${numAlternative}-name`).css("border", "");
+        alternativeIdHashTable[alternativeID] = alternativeID;
+        function deleteFile() {
+            return $.ajax({
+                url: "/cleanup", // API на сервере, возвращающее статус файла
+                method: "POST",
+                dataType: "json"
             });
-        };
+        }
 
-        poll();
-    }
-    function loadAndDisplayResults() {
-        $.ajax({
-            url: "/send_json_to_js",
-            method: "GET",
-            dataType: "json",
-            success: function (data) {
-                console.log(data);
-                let estimations = data.alternativesOrdered;
-                let resFields = "";
-                for (let i = 0; i < numAlternative; i++) {
-                    resFields += `<div class="res-block"><span>Альтернатива: ${estimations[i].alternativeID}`;
-                    for (const [key, value] of Object.entries(estimations[i].estimation[0])) {
-                        resFields += ` Оценка: ${value} ${key}</span></div>`;
+        deleteFile().done(function (response) {
+            console.log("Ответ сервера:", response);
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            console.error("Ошибка при вызове cleanup:", textStatus);
+        });
+        let alternativeName = $(`#alternative-${numAlternative}-name`).val();
+        let alternativeId = $(`#alternative-${numAlternative}-id`).val();
+        data.alternatives.push({
+            "alternativeID": alternativeId,
+            "alternativeName": alternativeName,
+            "abstractionLevelID": "group1"
+        })
+        for (let i = 1; i <= numExperts; i++) {
+            let expertID = $(`#expert-${i}-id`).val();
+            let criteria2Estimation = [];
+            for (let k = 1; k <= numCriteria; k++) {
+                let criteriaID = $(`#criteria-${k}-id`).val();
+                let estimationData = {
+                    criteriaID: criteriaID,
+                    estimation: [$(`#assessment-${i}-${numAlternative}-${k}`).val()]
+                };
+                let isQualitative = $(`#criteria-${k}-qualitative`).val() === 'true';
+                if (isQualitative) {
+                    let selectedScale = $(`#criteria-${k}-scale-select`).val();
+                    if (selectedScale) {
+                        estimationData['scaleID'] = selectedScale;
                     }
                 }
-                $("#add-alternative-modal").hide();
-                $("#evaluation-modal").hide();
-                $("#result-fields").html(resFields);
-                $("#meaningful-modal").hide();
-                $("#result-modal").show();
-                $("#result-left-modal").show();
+                criteria2Estimation.push(estimationData);
+            }
+            data.estimations[expertID].push({
+                alternativeID: alternativeId,
+                criteria2Estimation: criteria2Estimation
+            });
+        }
+        let jsonString = JSON.stringify(data, null, 2);
+        $.ajax({
+            type: "POST",
+            url: "/get_file",
+            contentType: "application/json",
+            data: jsonString,
+            success: function () {
+                waitForFile();
             },
             error: function (error) {
-                console.log("Ошибка при получении данных:", error);
+                console.log("Ошибка:", error);
             }
         });
+
+        function checkFileExists() {
+            return $.ajax({
+                url: "/check_file", // API на сервере, возвращающее статус файла
+                method: "GET",
+                dataType: "json"
+            });
+        }
+
+        // Функция polling
+        function waitForFile() {
+            const interval = 1000; // проверка раз в секунду
+            const maxAttempts = 30; // максимум попыток (например, 30 секунд)
+            let attempts = 0;
+
+            const poll = () => {
+                checkFileExists().done(function (data) {
+                    if (data.exists) {
+                        // Файл есть — вызываем второй AJAX
+                        loadAndDisplayResults();
+                    } else {
+                        attempts++;
+                        if (attempts < maxAttempts) {
+                            setTimeout(poll, interval);
+                        } else {
+                            console.log("Файл не появился за отведенное время");
+                        }
+                    }
+                }).fail(function () {
+                    console.log("Ошибка проверки наличия файла");
+                });
+            };
+
+            poll();
+        }
+
+        function loadAndDisplayResults() {
+            $.ajax({
+                url: "/send_json_to_js",
+                method: "GET",
+                dataType: "json",
+                success: function (newData) {
+
+                    let oldData = "";
+                    for (let i = 0; i < resultData.length; i++) {
+                        oldData += `<div style="display: flex; margin-bottom: 10px">`;
+                        oldData += `<div class="resInfo" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Альтернатива: ${i + 1}</span></div>`;
+                        oldData += `<div>`;
+                        oldData += `<div style="min-width: 100px; padding-left: 10px">ID: ${resultData[i].alternativeID}</div>`;
+                        oldData += `<div style="min-width: 150px; padding-left: 10px">Название: ${alternativeNames[resultData[i].alternativeID]}</div>`;
+                        let evaluation = Object.keys(resultData[i].estimation[0])[0];
+                        oldData += `<div style="min-width: 150px; padding-left: 10px; font-weight: bold">Оценка: ${evaluation}</div>`;
+                        oldData += `</div>`;
+                        oldData += `</div>`;
+                    }
+                    $("#old-result-fields").html(oldData);
+                    $("#old-result-modal").show();
+                    checkDuplicates = {};
+                    let estimations = newData.alternativesOrdered;
+                    let itogData = [];
+                    for (let i = 0; i < estimations.length; i++) {
+                        if (!checkDuplicates.hasOwnProperty(estimations[i].alternativeID)) {
+                            checkDuplicates[estimations[i].alternativeID] = estimations[i].alternativeID;
+                            itogData.push(estimations[i]);
+                        }
+                    }
+                    resultLenOfAlternatives = itogData.length;
+                    estimations = itogData;
+                    resultData = estimations;
+                    let resFields = "";
+                    for (let i = 0; i < numAlternative; i++) {
+                        resFields += `<div style="display: flex; margin-bottom: 10px">`;
+                        resFields += `<div class="resInfo" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Альтернатива: ${i + 1}</span></div>`;
+                        resFields += `<div>`;
+                        resFields += `<div style="min-width: 100px; padding-left: 10px">ID: ${estimations[i].alternativeID}</div>`;
+                        resFields += `<div style="min-width: 150px; padding-left: 10px">Название: ${alternativeNames[estimations[i].alternativeID]}</div>`;
+                        let evaluation = Object.keys(estimations[i].estimation[0])[0];
+                        resFields += `<div style="min-width: 150px; padding-left: 10px; font-weight: bold">Оценка: ${evaluation}</div>`;
+                        resFields += `</div>`;
+                        resFields += `</div>`;
+                    }
+                    resultData = estimations;
+                    $("#add-alternative-modal").hide();
+                    $("#evaluation-modal").hide();
+                    $("#result-fields").html(resFields);
+                    $("#result-modal").show();
+                    $("#result-left-modal").show();
+                },
+                error: function (error) {
+                    console.log("Ошибка при получении данных:", error);
+                }
+            });
+        }
+    } else {
+        if (!allFilled && !isIdGood) {
+            document.getElementById("New-alternative-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)";
+        } else if (!allFilled) {
+            document.getElementById("New-alternative-warning-text").textContent = "Не все поля заполнены";
+        } else {
+            document.getElementById("New-alternative-warning-text").textContent = "Альтернатива с таким id уже существует";
+        }
+        $("#warningNewAlternative").show()
     }
 })
-
-
-
-
-
-
-
