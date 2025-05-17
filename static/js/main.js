@@ -8,8 +8,6 @@ let qualitativeScaleValues = {};
 let scalesFromOntology = {};
 let criteriaLimits = {};
 let criteriaMin = {};
-let doesFileResultExist = false;
-let result = {};
 let limits = [];
 let arr_min = [];
 let alternativeIdHashTable = {}
@@ -177,12 +175,18 @@ $(".blue-btn-again").click(function () {
         "experts": [],
         "estimations": {}
     };
+    alternativeIdHashTable = {}
     deleteFile().done(function(response) {
         console.log("Ответ сервера:", response);
     }).fail(function(jqXHR, textStatus, errorThrown) {
         console.error("Ошибка при вызове cleanup:", textStatus);
     });
-
+    let input = document.getElementById("experts-input");
+    input.value = 1
+    input = document.getElementById("criteria-input");
+    input.value = 1
+    input = document.getElementById("alternatives-input");
+    input.value = 1
     numExperts = 0;
     numCriteria = 0;
     numAlternative = 0;
@@ -377,6 +381,7 @@ $("#submit-btn-to-criteria").click(function () {
                 criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-qualitative" style="padding-top: 4px">Качественный критерий:</label> <select id="criteria-${i}-qualitative" name="criteria-${i}-qualitative"><option value="false">false</option><option value="true">true</option></select><br></div>`;
                 criteriaFields += `<div class="row-criterias" id="criteria-${i}-scale" style="display: none;"><label for="criteria-${i}-scale-select"">Выберите шкалу:</label> <select id="criteria-${i}-scale-select" name="criteria-${i}-scale-select"></select><br></div>`;
                 criteriaFields += `<div class="row-criterias" id="criteria-${i}-limit"><label for="criteria-${i}-limit-select" style="padding-top: 10px">Ограничение:</label> <select id="criteria-${i}-limit-select" name="criteria-${i}-limit-select">${quantitativeLimitsOptions}</select><br></div>`;
+                criteriaFields += `<div class="row-criterias" id="criteria-${i}-checkbox"><label for="criteria-${i}-checkbox-select">Положительный критерий:</label><input id="criteria-${i}-checkbox-select" type="checkbox" name="a" value="true" style="margin: 0; width: 25px"><br></div>`;
                 criteriaFields += `</div>`;
             }
             $("#criteria-fields").html(criteriaFields);
@@ -443,6 +448,7 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
              */
             let isQualitative = $(`#criteria-${i}-qualitative`).val() === 'true';
 
+
             infoAboutCriteria += `<div style="display: flex; margin-bottom: 10px">`;
             infoAboutCriteria += `<div class="infoAboutCriteria" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Критерий ${i}</span></div>`;
             infoAboutCriteria += `<div>`;
@@ -467,6 +473,12 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
                 let limit = criteriaLimits[selectedLimit];
                 let min = criteriaMin[selectedLimit];
                 infoAboutCriteria += `<div style="min-width: 150px; padding-left: 10px">Шкала: от ${min} до ${limit}</div>`;
+            }
+            let isBenefit = document.getElementById(`criteria-${i}-checkbox-select`);
+            if (isBenefit.checked) {
+                infoAboutCriteria += `<div style="min-width: 150px; padding-left: 10px">Положительный критерий</div>`;
+            } else {
+                infoAboutCriteria += `<div style="min-width: 150px; padding-left: 10px">Отрицательный критерий</div>`;
             }
             infoAboutCriteria += `</div>`;
             infoAboutCriteria += `</div>`;
@@ -615,6 +627,35 @@ $("#back-btn-to-fields-of-alternatives").click(function () {
     $("#alternatives-modal").show();
 })
 
+let button = document.getElementById('submit-btn-to-send');
+
+button.addEventListener('click', () => {
+  let spinner = document.createElement('div');
+  spinner.className = 'spinner';
+  let originalText = button.textContent;
+  button.textContent = '';
+  button.appendChild(spinner);
+  setTimeout(() => {
+    button.removeChild(spinner);
+    button.textContent = originalText;
+  }, 4000);
+});
+
+
+let button1 = document.getElementById('submit-btn-to-send-new-alternative');
+button1.addEventListener('click', () => {
+    let spinner = document.createElement('div');
+    spinner.className = 'spinner';
+    let originalText = button1.textContent;
+    button1.textContent = '';
+    button1.appendChild(spinner);
+    setTimeout(() => {
+        button1.removeChild(spinner);
+        button1.textContent = originalText;
+        }, 4000);
+});
+
+
 $("#submit-btn-to-send").click(function () {
     /*
         Главный блок
@@ -658,7 +699,12 @@ $("#submit-btn-to-send").click(function () {
     for (let i = 1; i <= numCriteria; i++) {
         let criteriaName = $(`#criteria-${i}-name`).val();
         let criteriaId = $(`#criteria-${i}-id`).val();
-        data.criteria.group1.push({"criteriaID": criteriaId, "criteriaName": criteriaName, "qualitative": $(`#criteria-${i}-qualitative`).val() === "true"})
+        let isBenefit = document.getElementById(`criteria-${i}-checkbox-select`);
+        if (isBenefit.checked) {
+            data.criteria.group1.push({"criteriaID": criteriaId, "criteriaName": criteriaName, "qualitative": $(`#criteria-${i}-qualitative`).val() === "true", "benefit": true})
+        } else {
+            data.criteria.group1.push({"criteriaID": criteriaId, "criteriaName": criteriaName, "qualitative": $(`#criteria-${i}-qualitative`).val() === "true", "benefit": false})
+        }
     }
     let arrayOfExpertsWeights = Array(numExperts).fill((1/numExperts));
     for (let i = 1; i <= numExperts; i++) {
