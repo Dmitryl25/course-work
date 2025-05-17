@@ -1,11 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 from ontology import load_and_process_owl, generate_evaluation_scales
-from flask import Response
 import json
 import os
 import subprocess
 from flask_cors import CORS
-from flask import send_file
 RESULT_PATH = "C:/Users/dimul/Desktop/Inter/result.json"
 if os.path.exists(RESULT_PATH):
     os.remove(RESULT_PATH)
@@ -21,7 +19,15 @@ jar_path = "C:/Users/dimul/Desktop/Inter/lingvo-dss-all.jar"
 def load_scales():
     g, criteria = load_and_process_owl(owl_file_path)
     scales = generate_evaluation_scales(criteria, g)
-    formatted_scales = {prop: details['details']['values'] for prop, details in scales.items() if details['type'] == 'Качественный'}
+    formatted_scales = {prop: details['details']['values'] for prop, details in scales.items() if details['type'] == 'Качественный' and prop != "Discounts"}
+    for prop, details in scales.items():
+        if details['type'] == 'Качественный' and prop == "Discounts":
+            mas_of_evaluations = details.get('details').get('values')
+            prom = mas_of_evaluations[0]
+            mas_of_evaluations[0] = mas_of_evaluations[1]
+            mas_of_evaluations[1] = prom
+            details['details']['values'] = mas_of_evaluations
+            formatted_scales[prop] = details['details']['values']
     return jsonify(formatted_scales)
 @app.route('/cleanup', methods=['POST'])
 def cleanup():
@@ -35,7 +41,7 @@ def load_quantitative_scales():
     scales = generate_evaluation_scales(criteria, g)
     quantitative_scales = {
         prop: {
-            'min': details['details'].get('minInclusive', 'Не указано'),
+            'min': 1 if details['details'].get('minInclusive', 'Не указано') == 0 else details['details'].get('minInclusive', 'Не указано'),
             'max': details['details'].get('maxInclusive', 'Не указано')
         }
         for prop, details in scales.items() if details['type'] == 'Количественный'
@@ -85,7 +91,6 @@ def index():
 @app.route("/get_file", methods=["POST"])
 def get_file():
     data = request.get_json()
-    print(type(data))
     if not data:
         return jsonify({"error": "Нет данных"})
     response_data = send_file_to_api(data)
