@@ -37,16 +37,6 @@ let data = {
     "estimations": {}
 };
 
-/*
-1. Изменить "Элементы" - сделать в виде матрицы
-2. После добавления новой альтернативы изобразить в правом большом окне в виде двух окон, где слева старая версия (без альтернативы), а справа новая версия с дополнительной альтернативой
-3. может добавить units, но пока хз
-4. ещё подебажить
- */
-
-/*
-Блок заимствованного кода
- */
 function loadScalesFromOntology() {
     return new Promise((resolve, reject) => {
         $.getJSON('/load-scales', function (data) {
@@ -109,11 +99,6 @@ function getSelectedCriteriaLimits() {
         resolve(selectedLimits);
     });
 }
-
-
-/*
-Конец блока
- */
 
 function deleteFile() {
         return $.ajax({
