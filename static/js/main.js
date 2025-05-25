@@ -100,12 +100,13 @@ function getSelectedCriteriaLimits() {
     });
 }
 
+
 function deleteFile() {
-        return $.ajax({
+    return $.ajax({
             url: "/cleanup",
             method: "POST",
             dataType: "json"
-        });
+    });
 }
 
 
@@ -191,10 +192,6 @@ $(".blue-btn-again").click(function () {
 
 $("#back-btn-to_number-of-experts").click(function () {
     $("#experts-modal").hide();
-    /*
-    let block = document.querySelector("#experts");
-    block.innerHTML = "";
-     */
     $("#main-modal").show();
 });
 
@@ -208,29 +205,31 @@ $(document).ready(function () {
     loadQuantitativeScales();
     loadScalesFromOntology();
     $("#submit-btn").click(function () {
-        if (parseInt($("#experts-input").val()) <= 20) {
+        if (parseInt($("#experts-input").val()) <= 20 && parseInt($("#experts-input").val()) > 0) {
             if (numExperts !== parseInt($("#experts-input").val())) {
                 numExperts = parseInt($("#experts-input").val());
-                if (numExperts > 0 && numExperts <= 20) {
-                    $("#main-modal").hide();
-                    $("#experts-modal").show();
-                    let expertFields = "";
-                    for (let i = 1; i <= numExperts; i++) {
-                        expertFields += `<div class="expert-block" id="expert-block-${i}"><span class="bold-text">Эксперт ${i}:</span><br>`;
-                        expertFields += `<div class="row_experts"><label for="expert-${i}-name" style="padding-top: 6px">Имя:</label> <input type="text" id="expert-${i}-name" name="expert-${i}-name" placeholder="Text" required></div>`;
-                        expertFields += `<div class="row_experts"><label for="expert-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="expert-${i}-id" name="expert-${i}-id" placeholder="Text" required></div>`;
-                        expertFields += `<div class="row_experts"><label for="expert-${i}-competence" style="padding-top: 6px">Компетенция:</label> <input type="text" id="expert-${i}-competence" name="expert-${i}-competence" placeholder="Text" required><br></div></div>`;
-                    }
-                    $("#experts-fields").html(expertFields);
-
-
-                } else {
-                    console.log("Нужно ввести число от 1 до 50!")
+                $("#main-modal").hide();
+                $("#number-of-experts-warning-text").hide();
+                $(`#experts-input`).css("border", "");
+                $("#experts-modal").show();
+                let expertFields = "";
+                for (let i = 1; i <= numExperts; i++) {
+                    expertFields += `<div class="expert-block" id="expert-block-${i}"><span class="bold-text">Эксперт ${i}:</span><br>`;
+                    expertFields += `<div class="row_experts"><label for="expert-${i}-name" style="padding-top: 6px">Имя:</label> <input type="text" id="expert-${i}-name" name="expert-${i}-name" placeholder="Text" required></div>`;
+                    expertFields += `<div class="row_experts"><label for="expert-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="expert-${i}-id" name="expert-${i}-id" placeholder="Text" required></div>`;
+                    expertFields += `<div class="row_experts"><label for="expert-${i}-competence" style="padding-top: 6px">Компетенция:</label> <input type="text" id="expert-${i}-competence" name="expert-${i}-competence" placeholder="Text" required><br></div></div>`;
                 }
+                $("#experts-fields").html(expertFields);
             } else {
+                $("#number-of-experts-warning-text").hide();
                 $("#main-modal").hide();
                 $("#experts-modal").show();
             }
+        } else {
+            let warningText = `<span style="color: red">Нужно ввести число от 1 до 20</span>`;
+            $("#number-of-experts-warning-text").html(warningText);
+            $(`#experts-input`).css("border", "2px solid red");
+            $("#number-of-experts-warning-text").show();
         }
     });
 })
@@ -311,12 +310,6 @@ $("#submit-btn-to-number-of-criteria").click(function () {
 
 $("#back-btn-to-number-of-criteria").click(function () {
     $("#criteria-modal").hide();
-    /*
-    let blocks = document.querySelectorAll(".criteria-block")
-    blocks.forEach(block => block.remove())
-    let block = document.querySelector("#criteria");
-    block.innerHTML = "";
-     */
     $("#number-of-criteria-modal").show();
 })
 
@@ -405,9 +398,6 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
             let name = document.getElementById(`criteria-${i}-name`).value;
             let isQuality = document.getElementById(`criteria-${i}-qualitative`);
             isQuality = isQuality.options[isQuality.selectedIndex].value;
-            /*
-            Здесь еще обработка шкал для каждого критерия
-             */
             let isQualitative = $(`#criteria-${i}-qualitative`).val() === 'true';
 
 
@@ -466,20 +456,21 @@ $("#back-btn-to_number-of-alternatives").click(function () {
     $("#number-alternatives-modal").show();
 });
 
-/*
-    Заполнение альтернатив
- */
 $("#submit-btn-to-alternatives").click(function () {
     if (numAlternative !== parseInt($("#alternatives-input").val())) {
         numAlternative = parseInt($("#alternatives-input").val());
-        if (numAlternative > 0 && numAlternative < 20) {
+        if (numAlternative > 0 && numAlternative <= 20) {
             $("#number-alternatives-modal").hide();
             $("#alternatives-modal").show();
             let alternativeFields = ""
             for (let i = 1; i <= numAlternative; i++) {
-                alternativeFields += `<div class="alternative-block" id="alternative-block-${i}"><span class="bold-text" style="padding-bottom: 5px">Альтернатива ${i}:</span>`;
-                alternativeFields += `<div class="row_alternatives"><label for="alternative-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="alternative-${i}-id" name="alternative-${i}-id" required></div>`;
-                alternativeFields += `<div class="row_alternatives"><label for="alternative-${i}-name" style="padding-top: 6px">Название:</label> <input type="text" id="alternative-${i}-name" name="alternative-${i}-name" required><br></div></div>`;
+                alternativeFields += `<div class="alternative-block" id="alternative-block-${i}">`;
+                alternativeFields += `<span class="bold-text" style="padding-bottom: 5px">Альтернатива ${i}:</span>`;
+                alternativeFields += `<div class="row_alternatives"><label for="alternative-${i}-id" style="padding-top: 6px">ID:</label>`;
+                alternativeFields += `<input type="text" id="alternative-${i}-id" name="alternative-${i}-id" required></div>`
+                alternativeFields += `<div class="row_alternatives">`;
+                alternativeFields += `<label for="alternative-${i}-name" style="padding-top: 6px">Название:</label>`;
+                alternativeFields += `<input type="text" id="alternative-${i}-name" name="alternative-${i}-name" required><br></div></div>`;
             }
             $("#alternatives-fields").html(alternativeFields)
         }
@@ -506,12 +497,18 @@ $("#submit-btn-to-evaluate").click(function () {
             allFilled = false
         }
     }
+    if (allFilled) {
+        for (let i = 1; i <= numAlternative; i++) {
+            $(`#alternative-${i}-id`).css("border", "2px solid red");
+            $(`#alternative-${i}-name`).css("border", "2px solid red");
+        }
+    }
     let goodId = true;
     for (let i = 1; i < numAlternative; i++) {
         for (let j = i + 1; j <= numAlternative; j++) {
             if ($(`#alternative-${i}-id`).val() === $(`#alternative-${j}-id`).val()) {
-                $(`#alternative-${i}-id`).css("border", "2px solid red");
-                $(`#alternative-${j}-id`).css("border", "2px solid red");
+                $(`#alternative-${i}-id`).css("border", "");
+                $(`#alternative-${j}-id`).css("border", "");
                 goodId = false;
             }
         }
@@ -535,8 +532,6 @@ $("#submit-btn-to-evaluate").click(function () {
 
         $("#alternatives-modal").hide();
 
-        /*
-        */
         getSelectedCriteriaLimits().then(arr => {
             let evaluationMatrix = "";
             for (let i = 1; i <= numExperts; i++) {
@@ -596,11 +591,8 @@ $("#submit-btn-to-evaluate").click(function () {
     }
 })
 
-/*
 
- */
-
-let button = document.getElementById('submit-btn-to-send');
+let button = document.getElementById('submit-btn-to-send-data');
 
 button.addEventListener('click', () => {
   let spinner = document.createElement('div');
@@ -629,10 +621,7 @@ button1.addEventListener('click', () => {
 });
 
 
-$("#submit-btn-to-send").click(function () {
-    /*
-        Главный блок
-     */
+$("#submit-btn-to-send-data").click(function () {
     let index = 1;
     for (let key in scalesFromOntology) {
         data.scales.push({
@@ -660,13 +649,15 @@ $("#submit-btn-to-send").click(function () {
         let expertName = $(`#expert-${i}-name`).val();
         let expertId = $(`#expert-${i}-id`).val();
         let expertCompetence = $(`#expert-${i}-competence`).val().split(", ");
-        data.experts.push({"expertName": expertName, "expertID": expertId, "competencies": expertCompetence});
+        data.experts.push({"expertName": expertName, "expertID": expertId,
+                           "competencies": expertCompetence});
         data.estimations[expertId] = [];
     }
     for (let i = 1; i <= numAlternative; i++) {
         let alternativeName = $(`#alternative-${i}-name`).val();
         let alternativeId = $(`#alternative-${i}-id`).val();
-        data.alternatives.push({"alternativeID": alternativeId, "alternativeName": alternativeName, "abstractionLevelID": "group1"});
+        data.alternatives.push({"alternativeID": alternativeId, "alternativeName": alternativeName,
+                                                                    "abstractionLevelID": "group1"});
         alternativeIdHashTable[alternativeId] = alternativeId;
     }
     for (let i = 1; i <= numCriteria; i++) {
@@ -674,9 +665,15 @@ $("#submit-btn-to-send").click(function () {
         let criteriaId = $(`#criteria-${i}-id`).val();
         let isBenefit = document.getElementById(`criteria-${i}-checkbox-select`);
         if (isBenefit.checked) {
-            data.criteria.group1.push({"criteriaID": criteriaId, "criteriaName": criteriaName, "qualitative": $(`#criteria-${i}-qualitative`).val() === "true", "benefit": true})
+            data.criteria.group1.push({"criteriaID": criteriaId,
+                                       "criteriaName": criteriaName,
+                                       "qualitative": $(`#criteria-${i}-qualitative`).val() === "true",
+                                       "benefit": true})
         } else {
-            data.criteria.group1.push({"criteriaID": criteriaId, "criteriaName": criteriaName, "qualitative": $(`#criteria-${i}-qualitative`).val() === "true", "benefit": false})
+            data.criteria.group1.push({"criteriaID": criteriaId,
+                                       "criteriaName": criteriaName,
+                                       "qualitative": $(`#criteria-${i}-qualitative`).val() === "true",
+                                       "benefit": false})
         }
     }
     let arrayOfExpertsWeights = Array(numExperts).fill((1/numExperts));
@@ -724,22 +721,18 @@ $("#submit-btn-to-send").click(function () {
     });
     function checkFileExists() {
         return $.ajax({
-            url: "/check_file", // API на сервере, возвращающее статус файла
+            url: "/check_file",
             method: "GET",
             dataType: "json"
         });
     }
-
-    // Функция polling
     function waitForFile() {
-        const interval = 1000; // проверка раз в секунду
-        const maxAttempts = 30; // максимум попыток (например, 30 секунд)
+        const interval = 500;
+        const maxAttempts = 30;
         let attempts = 0;
-
         const poll = () => {
             checkFileExists().done(function(data) {
                 if (data.exists) {
-                    // Файл есть — вызываем второй AJAX
                     loadAndDisplayResults();
                 } else {
                     attempts++;
@@ -753,9 +746,9 @@ $("#submit-btn-to-send").click(function () {
                 console.log("Ошибка проверки наличия файла");
             });
         };
-
         poll();
     }
+
     function loadAndDisplayResults() {
         $.ajax({
             url: "/send_json_to_js",
@@ -781,9 +774,11 @@ $("#submit-btn-to-send").click(function () {
                 let resFields = "";
                 for (let i = 0; i < resultLenOfAlternatives; i++) {
                     resFields += `<div style="display: flex; margin-bottom: 10px">`;
-                    resFields += `<div class="resInfo" style="margin-bottom: 10px; display: flex"><span style="font-weight: bold">Альтернатива:</span></div>`;
+                    resFields += `<div class="resInfo" style="margin-bottom: 10px; display: flex">`;
+                    resFields += `<span style="font-weight: bold">Альтернатива:</span></div>`;
                     resFields += `<div>`;
-                    resFields += `<div style="min-width: 150px; padding-left: 10px">${alternativeNames[estimations[i].alternativeID]}</div>`;
+                    resFields += `<div style="min-width: 150px; padding-left: 10px">`;
+                    resFields += `${alternativeNames[estimations[i].alternativeID]}</div>`;
                     resFields += `<div style="min-width: 100px; padding-left: 10px">ID: ${estimations[i].alternativeID}</div>`;
                     let evaluation = Object.keys(estimations[i].estimation[0])[0];
                     resFields += `<div style="min-width: 150px; padding-left: 10px; font-weight: bold">Оценка: ${evaluation}</div>`;
@@ -871,6 +866,7 @@ $("#submit-btn-to-send-new-alternative").click(function () {
         $(`#alternative-${numAlternative}-id`).css("border", "");
         $(`#alternative-${numAlternative}-name`).css("border", "");
         alternativeIdHashTable[alternativeID] = alternativeID;
+        alternativeNames[alternativeID] = $(`#alternative-${numAlternative}-name`).val();
 
         deleteFile().done(function (response) {
             console.log("Ответ сервера:", response);
@@ -923,22 +919,20 @@ $("#submit-btn-to-send-new-alternative").click(function () {
 
         function checkFileExists() {
             return $.ajax({
-                url: "/check_file", // API на сервере, возвращающее статус файла
+                url: "/check_file",
                 method: "GET",
                 dataType: "json"
             });
         }
 
-        // Функция polling
         function waitForFile() {
-            const interval = 1000; // проверка раз в секунду
-            const maxAttempts = 30; // максимум попыток (например, 30 секунд)
+            const interval = 500;
+            const maxAttempts = 30;
             let attempts = 0;
 
             const poll = () => {
                 checkFileExists().done(function (data) {
                     if (data.exists) {
-                        // Файл есть — вызываем второй AJAX
                         loadAndDisplayResults();
                     } else {
                         attempts++;
@@ -1015,7 +1009,7 @@ $("#submit-btn-to-send-new-alternative").click(function () {
         }
     } else {
         if (!allFilled && !isIdGood) {
-            document.getElementById("New-alternative-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)";
+            document.getElementById("New-alternative-warning-text").textContent = "Неверный ввод (совпадают id и заполнены не все поля)";
         } else if (!allFilled) {
             document.getElementById("New-alternative-warning-text").textContent = "Не все поля заполнены";
         } else {
