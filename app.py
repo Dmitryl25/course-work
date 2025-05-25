@@ -4,24 +4,24 @@ import json
 import os
 import subprocess
 from flask_cors import CORS
-RESULT_PATH = "C:/Users/dimul/Desktop/Inter/result.json"
+RESULT_PATH = "C:/Users/dimul/Desktop/Inter/result.json" # путь = output_dir / result.json
 if os.path.exists(RESULT_PATH):
     os.remove(RESULT_PATH)
 app = Flask(__name__)
 CORS(app)
-owl_file_path = r'C:\Data\cinema.owl'
-input_path = "C:/Users/dimul/Desktop/Inter/input.json"
-output_dir = "C:/Users/dimul/Desktop/Inter/"
-jar_path = "C:/Users/dimul/Desktop/Inter/lingvo-dss-all.jar"
+owl_file_path = r'C:/Users/dimul/Desktop/Inter/library.owl' # путь к файлу онтологии
+input_path = "C:/Users/dimul/Desktop/Inter/input.json" # путь к файлу, куда записываются данные с клиента
+output_dir = "C:/Users/dimul/Desktop/Inter/" # путь к директории с проектом
+jar_path = "C:/Users/dimul/Desktop/Inter/lingvo-dss-all.jar" # путь к файлу с решателем
 
 
 @app.route("/load-scales", methods=["GET"])
 def load_scales():
     g, criteria = load_and_process_owl(owl_file_path)
     scales = generate_evaluation_scales(criteria, g)
-    formatted_scales = {prop: details['details']['values'] for prop, details in scales.items() if details['type'] == 'Качественный' and prop != "Discounts"}
+    formatted_scales = {prop: details['details']['values'] for prop, details in scales.items() if details['type'] == 'Качественный'}
     for prop, details in scales.items():
-        if details['type'] == 'Качественный' and prop == "Discounts":
+        if details['type'] == 'Качественный':
             mas_of_evaluations = details.get('details').get('values')
             prom = mas_of_evaluations[0]
             mas_of_evaluations[0] = mas_of_evaluations[1]
@@ -39,13 +39,28 @@ def cleanup():
 def load_quantitative_scales():
     g, criteria = load_and_process_owl(owl_file_path)
     scales = generate_evaluation_scales(criteria, g)
-    quantitative_scales = {
-        prop: {
-            'min': 1 if details['details'].get('minInclusive', 'Не указано') == 0 else details['details'].get('minInclusive', 'Не указано'),
-            'max': details['details'].get('maxInclusive', 'Не указано')
-        }
-        for prop, details in scales.items() if details['type'] == 'Количественный'
-    }
+    flag = False
+    quantitative_scales = {}
+    for prop, details in scales.items():
+        if details['type'] == 'Количественный':
+            if details['details'].get('minInclusive', 'Не указано') == 0:
+                if details['details'].get('minInclusive', 'Не указано') == 0 and details['details'].get('maxInclusive', 'Не указано') == 10 and not flag:
+                    flag = True
+                    quantitative_scales[prop] = {
+                        'min': 1,
+                        'max': details['details'].get('maxInclusive', 'Не указано')
+                    }
+                else:
+                    if details['details'].get('maxInclusive', 'Не указано') != 10:
+                        quantitative_scales[prop] = {
+                            'min': 1,
+                            'max': details['details'].get('maxInclusive', 'Не указано')
+                        }
+            else:
+                quantitative_scales[prop] = {
+                    'min': details['details'].get('minInclusive', 'Не указано'),
+                    'max': details['details'].get('maxInclusive', 'Не указано')
+                }
     return jsonify(quantitative_scales)
 
 
@@ -61,8 +76,6 @@ def send_file_to_api(data):
     com = ["java", "-jar", jar_path, "-i", input_path, "-o", output_dir]
     try:
         result = subprocess.run(com, capture_output=True, text=True, check=True)
-        while not os.path.exists("result.json"):
-            pass
         return jsonify({
             "status": "success",
             "stdout": result.stdout,
@@ -95,9 +108,6 @@ def get_file():
         return jsonify({"error": "Нет данных"})
     response_data = send_file_to_api(data)
     return response_data
-
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
