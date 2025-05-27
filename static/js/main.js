@@ -221,6 +221,7 @@ $(document).ready(function () {
                 }
                 $("#experts-fields").html(expertFields);
             } else {
+                $(`#experts-input`).css("border", "");
                 $("#number-of-experts-warning-text").hide();
                 $("#main-modal").hide();
                 $("#experts-modal").show();
@@ -298,7 +299,7 @@ $("#submit-btn-to-number-of-criteria").click(function () {
         $("#number-of-criteria-modal").show();
     } else {
         if (!goodId && !allFilled) {
-            document.getElementById("Experts-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)";
+            document.getElementById("Experts-warning-text").textContent = "Неверный ввод (совпадают id и заполнены не все поля)";
         } else if (!goodId) {
             document.getElementById("Experts-warning-text").textContent = "Id экспертов совпадают";
         } else {
@@ -314,43 +315,48 @@ $("#back-btn-to-number-of-criteria").click(function () {
 })
 
 $("#submit-btn-to-criteria").click(function () {
-    if (parseInt($("#criteria-input").val()) < 20) {
+    if (parseInt($("#criteria-input").val()) > 0 && parseInt($("#criteria-input").val()) <= 20) {
         if (numCriteria !== parseInt($("#criteria-input").val())) {
             numCriteria = parseInt($("#criteria-input").val());
-            if (numCriteria > 0 && numCriteria < 20) {
-                $("#number-of-criteria-modal").hide();
-                $("#criteria-modal").show();
-                let criteriaFields = "";
-                for (let i = 1; i <= numCriteria; i++) {
-                    criteriaFields += `<div class="criteria-block" id="criteria-block-${i}"><strong style="padding-bottom: 3px">Критерий ${i}:</strong>`;
-                    criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="criteria-${i}-id" name="criteria-${i}-id" required><br></div>`;
-                    criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-name" style="padding-top: 6px">Название:</label> <input type="text" id="criteria-${i}-name" name="criteria-${i}-name" required><br></div>`;
-                    criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-qualitative" style="padding-top: 4px">Качественный критерий:</label> <select id="criteria-${i}-qualitative" name="criteria-${i}-qualitative"><option value="false">false</option><option value="true">true</option></select><br></div>`;
-                    criteriaFields += `<div class="row-criterias" id="criteria-${i}-scale" style="display: none;"><label for="criteria-${i}-scale-select"">Выберите шкалу:</label> <select id="criteria-${i}-scale-select" name="criteria-${i}-scale-select"></select><br></div>`;
-                    criteriaFields += `<div class="row-criterias" id="criteria-${i}-limit"><label for="criteria-${i}-limit-select" style="padding-top: 10px">Ограничение:</label> <select id="criteria-${i}-limit-select" name="criteria-${i}-limit-select">${quantitativeLimitsOptions}</select><br></div>`;
-                    criteriaFields += `<div class="row-criterias" id="criteria-${i}-checkbox"><label for="criteria-${i}-checkbox-select">Положительный критерий:</label><input id="criteria-${i}-checkbox-select" type="checkbox" name="a" value="true" style="margin: 0; width: 25px"><br></div>`;
-                    criteriaFields += `</div>`;
-                }
-                $("#criteria-fields").html(criteriaFields);
-
-                for (let i = 1; i <= numCriteria; i++) {
-                    $(`#criteria-${i}-qualitative`).change(function () {
-                        if ($(this).val() === "true") {
-                            $(`#criteria-${i}-scale`).show();
-                            $(`#criteria-${i}-limit`).hide();
-                            $(`#criteria-${i}-scale-select`).html(qualitativeScaleOptions);
-                        } else {
-                            $(`#criteria-${i}-scale`).hide();
-                            $(`#criteria-${i}-limit`).show();
-                        }
-                    });
-                }
-
-            }
-        } else {
             $("#number-of-criteria-modal").hide();
             $("#criteria-modal").show();
+            $("#number-of-criteria-warning-text").hide();
+            $(`#criteria-input`).css("border", "");
+            let criteriaFields = "";
+            for (let i = 1; i <= numCriteria; i++) {
+                criteriaFields += `<div class="criteria-block" id="criteria-block-${i}"><strong style="padding-bottom: 3px">Критерий ${i}:</strong>`;
+                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-id" style="padding-top: 6px">ID:</label> <input type="text" id="criteria-${i}-id" name="criteria-${i}-id" required><br></div>`;
+                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-name" style="padding-top: 6px">Название:</label> <input type="text" id="criteria-${i}-name" name="criteria-${i}-name" required><br></div>`;
+                criteriaFields += `<div class="row-criterias"><label for="criteria-${i}-qualitative" style="padding-top: 4px">Качественный критерий:</label> <select id="criteria-${i}-qualitative" name="criteria-${i}-qualitative"><option value="false">false</option><option value="true">true</option></select><br></div>`;
+                criteriaFields += `<div class="row-criterias" id="criteria-${i}-scale" style="display: none;"><label for="criteria-${i}-scale-select"">Выберите шкалу:</label> <select id="criteria-${i}-scale-select" name="criteria-${i}-scale-select"></select><br></div>`;
+                criteriaFields += `<div class="row-criterias" id="criteria-${i}-limit"><label for="criteria-${i}-limit-select" style="padding-top: 10px">Ограничение:</label> <select id="criteria-${i}-limit-select" name="criteria-${i}-limit-select">${quantitativeLimitsOptions}</select><br></div>`;
+                criteriaFields += `<div class="row-criterias" id="criteria-${i}-checkbox"><label for="criteria-${i}-checkbox-select">Положительный критерий:</label><input id="criteria-${i}-checkbox-select" type="checkbox" name="a" value="true" style="margin: 0; width: 25px"><br></div>`;
+                criteriaFields += `</div>`;
+            }
+            $("#criteria-fields").html(criteriaFields);
+            for (let i = 1; i <= numCriteria; i++) {
+                $(`#criteria-${i}-qualitative`).change(function () {
+                    if ($(this).val() === "true") {
+                        $(`#criteria-${i}-scale`).show();
+                        $(`#criteria-${i}-limit`).hide();
+                        $(`#criteria-${i}-scale-select`).html(qualitativeScaleOptions);
+                    } else {
+                        $(`#criteria-${i}-scale`).hide();
+                        $(`#criteria-${i}-limit`).show();
+                    }
+                });
+            }
+        } else {
+            $(`#criteria-input`).css("border", "");
+            $("#number-of-criteria-modal").hide();
+            $("#criteria-modal").show();
+            $("#number-of-criteria-warning-text").hide();
         }
+    } else {
+        let warningText = `<span style="color: red">Нужно ввести число от 1 до 20</span>`;
+        $("#number-of-criteria-warning-text").html(warningText);
+        $(`#criteria-input`).css("border", "2px solid red");
+        $("#number-of-criteria-warning-text").show();
     }
 })
 
@@ -440,7 +446,7 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
         $("#number-alternatives-modal").show();
     } else {
         if (!goodId && !allFilled) {
-            document.getElementById("Criteria-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)";
+            document.getElementById("Criteria-warning-text").textContent = "Неверный ввод (совпадают id и заполнены не все поля)";
         } else if (!goodId) {
             document.getElementById("Criteria-warning-text").textContent = "Id критериев совпадают";
         } else {
@@ -457,10 +463,12 @@ $("#back-btn-to_number-of-alternatives").click(function () {
 });
 
 $("#submit-btn-to-alternatives").click(function () {
-    if (numAlternative !== parseInt($("#alternatives-input").val())) {
-        numAlternative = parseInt($("#alternatives-input").val());
-        if (numAlternative > 0 && numAlternative <= 20) {
+    if (parseInt($("#alternatives-input").val()) > 0 && parseInt($("#alternatives-input").val()) <= 20) {
+        if (numAlternative !== parseInt($("#alternatives-input").val())) {
+            numAlternative = parseInt($("#alternatives-input").val());
             $("#number-alternatives-modal").hide();
+            $("#number-of-alternatives-warning-text").hide();
+            $(`#alternatives-input`).css("border", "");
             $("#alternatives-modal").show();
             let alternativeFields = ""
             for (let i = 1; i <= numAlternative; i++) {
@@ -473,10 +481,18 @@ $("#submit-btn-to-alternatives").click(function () {
                 alternativeFields += `<input type="text" id="alternative-${i}-name" name="alternative-${i}-name" required><br></div></div>`;
             }
             $("#alternatives-fields").html(alternativeFields)
+
+        } else {
+            $(`#alternatives-input`).css("border", "");
+            $("#number-alternatives-modal").hide();
+            $("#number-of-alternatives-warning-text").hide();
+            $("#alternatives-modal").show();
         }
     } else {
-        $("#number-alternatives-modal").hide();
-        $("#alternatives-modal").show();
+        let warningText = `<span style="color: red">Нужно ввести число от 1 до 20</span>`;
+        $("#number-of-alternatives-warning-text").html(warningText);
+        $(`#alternatives-input`).css("border", "2px solid red");
+        $("#number-of-alternatives-warning-text").show();
     }
 });
 
@@ -499,8 +515,8 @@ $("#submit-btn-to-evaluate").click(function () {
     }
     if (allFilled) {
         for (let i = 1; i <= numAlternative; i++) {
-            $(`#alternative-${i}-id`).css("border", "2px solid red");
-            $(`#alternative-${i}-name`).css("border", "2px solid red");
+            $(`#alternative-${i}-id`).css("border", "");
+            $(`#alternative-${i}-name`).css("border", "");
         }
     }
     let goodId = true;
@@ -581,7 +597,7 @@ $("#submit-btn-to-evaluate").click(function () {
         })
     } else {
         if (!goodId && !allFilled) {
-            document.getElementById("Alternative-warning-text").textContent = "Неверный ввод (совпадают id или заполнены не все поля)";
+            document.getElementById("Alternative-warning-text").textContent = "Неверный ввод (совпадают id и заполнены не все поля)";
         } else if (!goodId) {
             document.getElementById("Alternative-warning-text").textContent = "Id критериев совпадают";
         } else {
