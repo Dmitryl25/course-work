@@ -265,6 +265,15 @@ $("#submit-btn-to-number-of-criteria").click(function () {
             $(`#expert-${i}-competence`).css("border", "");
         }
     }
+
+    if (allFilled) {
+        for (let i = 1; i <= numExperts; i++) {
+            $(`#expert-${i}-name`).css("border", "");
+            $(`#expert-${i}-id`).css("border", "");
+            $(`#expert-${i}-competence`).css("border", "");
+        }
+    }
+
     let goodId = true;
     for (let i = 1; i < numExperts; i++) {
         for (let j = i + 1; j <= numExperts; j++) {
@@ -275,6 +284,16 @@ $("#submit-btn-to-number-of-criteria").click(function () {
             }
         }
     }
+
+    if (goodId) {
+        for (let i = 1; i <= numExperts; i++) {
+            if ($(`#expert-${i}-id`).val() !== "") {
+                $(`#expert-${i}-id`).css("border", "");
+            }
+        }
+    }
+
+
     if (allFilled && goodId) {
         let infoAboutExperts = "";
         infoAboutExperts += `<div class="infoAboutExperts" style="margin-bottom: 15px"><span style="font-size: 24px; font-weight: bold">Эксперты</span></div>`;
@@ -369,7 +388,6 @@ $("#back-btn-to-fields-of-criteria").click(function () {
 
 $("#submit-btn-to-number-of-alternatives").click(function () {
     let allFilled = true
-    console.log($("#criteria-1-scale").val());
     for (let i = 1; i <= numCriteria; i++) {
         if ($(`#criteria-${i}-id`).val() === "") {
             $(`#criteria-${i}-id`).css("border", "2px solid red");
@@ -380,6 +398,14 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
             allFilled = false
         }
     }
+    console.log(allFilled)
+    if (allFilled) {
+        for (let i = 1; i <= numCriteria; i++) {
+            $(`#criteria-${i}-name`).css("border", "");
+            $(`#criteria-${i}-id`).css("border", "");
+        }
+    }
+
     let goodId = true;
     for (let i = 1; i < numCriteria; i++) {
         for (let j = i + 1; j <=numCriteria; j++) {
@@ -387,6 +413,13 @@ $("#submit-btn-to-number-of-alternatives").click(function () {
                 $(`#criteria-${i}-id`).css("border", "2px solid red");
                 $(`#criteria-${j}-id`).css("border", "2px solid red");
                 goodId = false;
+            }
+        }
+    }
+    if (goodId) {
+        for (let i = 1; i <= numCriteria; i++) {
+            if ($(`#criteria-${i}-id`).val() !== "") {
+                $(`#criteria-${i}-id`).css("border", "");
             }
         }
     }
@@ -523,9 +556,17 @@ $("#submit-btn-to-evaluate").click(function () {
     for (let i = 1; i < numAlternative; i++) {
         for (let j = i + 1; j <= numAlternative; j++) {
             if ($(`#alternative-${i}-id`).val() === $(`#alternative-${j}-id`).val()) {
-                $(`#alternative-${i}-id`).css("border", "");
-                $(`#alternative-${j}-id`).css("border", "");
+                $(`#alternative-${i}-id`).css("border", "2px solid red");
+                $(`#alternative-${j}-id`).css("border", "2px solid red");
                 goodId = false;
+            }
+        }
+    }
+
+    if (goodId) {
+        for (let i = 1; i <= numAlternative; i++) {
+            if ($(`#alternative-${i}-id`).val() !== "") {
+                $(`#alternative-${i}-id`).css("border", "");
             }
         }
     }
@@ -545,7 +586,7 @@ $("#submit-btn-to-evaluate").click(function () {
             infoAboutAlternative += `</div>`;
         }
         $("#alternatives").html(infoAboutAlternative).show();
-
+        $("#warningAlternative").hide();
         $("#alternatives-modal").hide();
 
         getSelectedCriteriaLimits().then(arr => {
@@ -603,7 +644,7 @@ $("#submit-btn-to-evaluate").click(function () {
         } else {
             document.getElementById("Alternative-warning-text").textContent = "Не все поля заполнены";
         }
-        $("#warningCriteria").show()
+        $("#warningAlternative").show()
     }
 })
 
@@ -862,12 +903,6 @@ $("#submit-btn-to-add-new-alternative").click(function () {
 })
 
 $("#submit-btn-to-send-new-alternative").click(function () {
-    let alternativeID = $(`#alternative-${numAlternative}-id`).val();
-    let isIdGood = true;
-    if (alternativeIdHashTable.hasOwnProperty(alternativeID)) {
-        $(`#alternative-${numAlternative}-id`).css("border", "2px solid red");
-        isIdGood = false;
-    }
     let allFilled = true;
     if ($(`#alternative-${numAlternative}-id`).val() === "") {
         $(`#alternative-${numAlternative}-id`).css("border", "2px solid red");
@@ -877,6 +912,23 @@ $("#submit-btn-to-send-new-alternative").click(function () {
         $(`#alternative-${numAlternative}-name`).css("border", "2px solid red");
         allFilled = false
     }
+
+    if (allFilled) {
+        $(`#alternative-${numAlternative}-id`).css("border", "");
+        $(`#alternative-${numAlternative}-name`).css("border", "");
+    }
+
+    let alternativeID = $(`#alternative-${numAlternative}-id`).val();
+
+    let isIdGood = true;
+    if (alternativeIdHashTable.hasOwnProperty(alternativeID)) {
+        $(`#alternative-${numAlternative}-id`).css("border", "2px solid red");
+        isIdGood = false;
+    }
+    if (isIdGood && $(`#alternative-${numAlternative}-id`).val() !== "") {
+        $(`#alternative-${numAlternative}-id`).css("border", "");
+    }
+
     if (isIdGood && allFilled) {
         $("#warningNewAlternative").hide();
         $(`#alternative-${numAlternative}-id`).css("border", "");
